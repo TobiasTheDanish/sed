@@ -21,6 +21,12 @@ void buffer_append(buffer_t* buf, char* input) {
 	}
 }
 
+int buffer_pop(buffer_t* buf) {
+	buf->size -= 1;
+	buf->text[buf->size] = 0;
+	return 1;
+}
+
 void buffer_insert_at(buffer_t* buf, char* input, size_t pos) {
 	size_t input_size = strlen(input);
 	assert((buf->size + input_size) < buf->cap);
@@ -38,4 +44,22 @@ void buffer_insert_at(buffer_t* buf, char* input, size_t pos) {
 	while (i < input_size) {
 		buf->text[pos++] = input[i++];
 	}
+	buf->size += input_size;
+}
+
+int buffer_remove_at(buffer_t* buf, size_t pos) {
+	if (pos > buf->size || pos <= 0) {
+		return 0;
+	}
+
+	if (buf->size == pos) {
+		return buffer_pop(buf);
+	}
+
+	for (size_t i = pos; i < buf->size; i++) {
+		buf->text[i-1] = buf->text[i];
+	}
+	buf->size -= 1;
+	buf->text[buf->size] = 0;
+	return 1;
 }

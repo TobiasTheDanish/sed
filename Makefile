@@ -22,10 +22,7 @@ dir:
 	mkdir -p $(BUILDDIR)
 
 clean: 
-	-rm *.out
-	-rm *.o
-	-rm src/*.o
-	-rm build/*.o
+	-rm build/*
 
 rebuild:
 	make clean

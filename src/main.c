@@ -124,7 +124,24 @@ int main() {
 					quit = true;
 					break;
 
-				case SDL_TEXTINPUT: {
+				case SDL_KEYDOWN:
+					{
+						switch (event.key.keysym.sym) {
+							case SDLK_BACKSPACE:
+								cursor -= buffer_remove_at(buffer, cursor);
+								break;
+							case SDLK_LEFT:
+								if (cursor > 0) cursor--;
+								break;
+							case SDLK_RIGHT:
+								if (cursor < buffer->size) cursor++;
+								break;
+						}
+					}
+					break;
+
+				case SDL_TEXTINPUT: 
+					{
 						buffer_insert_at(buffer, event.text.text, cursor);
 						cursor += strlen(event.text.text);
 					}

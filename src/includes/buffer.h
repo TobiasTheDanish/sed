@@ -12,5 +12,6 @@ typedef struct {
 
 buffer_t* buffer_init(size_t cap);
 void buffer_insert_at(buffer_t* buf, char* input, size_t pos);
+int buffer_remove_at(buffer_t* buf, size_t pos);
 
 #endif // !BUFFER_H
