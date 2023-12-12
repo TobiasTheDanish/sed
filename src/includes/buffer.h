@@ -8,10 +8,12 @@ typedef struct {
 	char* text;
 	size_t size;
 	size_t cap;
+	Vec2f cursor;
 } buffer_t;
 
 buffer_t* buffer_init(size_t cap);
-void buffer_insert_at(buffer_t* buf, char* input, size_t pos);
-int buffer_remove_at(buffer_t* buf, size_t pos);
+void buffer_insert(buffer_t* buf, char* input);
+void buffer_remove(buffer_t* buf);
+void buffer_move_cursor(buffer_t* buf, Vec2f movement);
 
 #endif // !BUFFER_H

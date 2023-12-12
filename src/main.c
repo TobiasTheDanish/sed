@@ -111,7 +111,6 @@ int main() {
 	bool quit = false;
 
 	buffer_t* buffer = buffer_init(1024);
-	size_t cursor = 0;
 
 	while (!quit) {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -128,28 +127,25 @@ int main() {
 					{
 						switch (event.key.keysym.sym) {
 							case SDLK_BACKSPACE:
-								cursor -= buffer_remove_at(buffer, cursor);
+								buffer_remove(buffer);
 								break;
 							case SDLK_LEFT:
-								if (cursor > 0) cursor--;
+								if (buffer->cursor.x > 0) buffer_move_cursor(buffer, vec2f(-1.0, 0.0));
 								break;
 							case SDLK_RIGHT:
-								if (cursor < buffer->size) cursor++;
+								if (buffer->cursor.x < buffer->size) buffer_move_cursor(buffer, vec2f(1.0, 0.0));
 								break;
 						}
 					}
 					break;
 
 				case SDL_TEXTINPUT: 
-					{
-						buffer_insert_at(buffer, event.text.text, cursor);
-						cursor += strlen(event.text.text);
-					}
+					buffer_insert(buffer, event.text.text);
 					break;
 			}
 		}
 
-		render_text(renderer, texture, buffer->text, vec2f(0.0, 0.0), 0xFF0000FF, 5.0f, vec2f(((float)cursor * FONT_CHAR_WIDTH * 5), 0.0));
+		render_text(renderer, texture, buffer->text, vec2f(0.0, 0.0), 0xFF0000FF, 5.0f, vec2f((buffer->cursor.x * FONT_CHAR_WIDTH * 5), (buffer->cursor.y * FONT_CHAR_HEIGHT * 5)));
 		SDL_RenderPresent(renderer);
 	}
 
