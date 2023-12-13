@@ -24,6 +24,7 @@ void buffer_remove(buffer_t* buf);
 void buffer_move_cursor(buffer_t* buf, Vec2f movement);
 void buffer_move_cursor_to(buffer_t* buf, Vec2f pos);
 void buffer_new_line(buffer_t* buf);
+void buffer_join_lines(buffer_t* buf, line_t* a, line_t* b);
 
 float clamp_cursor_x(line_t* line, Vec2f cursor);
 #endif // !BUFFER_H
