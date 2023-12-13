@@ -1,4 +1,3 @@
-CC = gcc
 CFLAGS = -c -g -Wall -Wextra
 SDL2FLAGS = $(shell pkg-config sdl2 --cflags --libs) -lm
 
@@ -10,10 +9,10 @@ SOURCES = $(wildcard $(SOURCEDIR)/*.c)
 OBJECTS = $(patsubst $(SOURCEDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))
 
 $(BUILDDIR)/$(EXEC): $(OBJECTS)
-	$(CC) $^ -o $@ $(SDL2FLAGS) -lSDL2_image
+	$(CC) $^ -o $@ $(SDL2FLAGS) 
 
 $(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.c
-	$(CC) $(CFLAGS) -o $@ $<  $(SDL2FLAGS) -lSDL2_image
+	$(CC) $(CFLAGS) -o $@ $<  $(SDL2FLAGS) 
 
 all: 
 	dir $(BUILDDIR)
