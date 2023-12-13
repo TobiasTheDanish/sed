@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v1
+      - name: create build dir
+        run: |
+          mkdir build
       - name: install dependencies
         run: |
           sudo apt-get update
@@ -22,6 +25,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v1
+      - name: create build dir
+        run: |
+          mkdir build
       - name: install dependencies
         run: |
           sudo apt-get update
@@ -33,6 +39,9 @@ jobs:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v1
+      - name: create build dir
+        run: |
+          mkdir build
       - name: install dependencies
         run: brew install sdl2 pkg-config glew
       - name: build ded
