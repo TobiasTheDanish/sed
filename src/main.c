@@ -1,4 +1,5 @@
 #include "includes/buffer.h"
+#include <SDL2/SDL_blendmode.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_rect.h>
@@ -26,8 +27,8 @@
 
 void render_cursor(SDL_Renderer* renderer, Vec2f pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
-		.x = (int) floorf(pos.x),
-		.y = (int) floorf(pos.y),
+		.x = (int) (floorf(pos.x) * FONT_CHAR_WIDTH * scale),
+		.y = (int) (floorf(pos.y) * FONT_CHAR_HEIGHT * scale),
 		.w = (int)floorf((float)FONT_CHAR_WIDTH * scale),
 		.h = (int)floorf((float)FONT_CHAR_HEIGHT * scale),
 	};
@@ -49,8 +50,8 @@ void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2f pos, U
 	};
 
 	const SDL_Rect dst = {
-		.x = (int)floorf(pos.x),
-		.y = (int)floorf(pos.y),
+		.x = (int)(floorf(pos.x) * FONT_CHAR_WIDTH * scale),
+		.y = (int)(floorf(pos.y) * FONT_CHAR_HEIGHT * scale),
 		.w = (int)floorf((float)FONT_CHAR_WIDTH * scale),
 		.h = (int)floorf((float)FONT_CHAR_HEIGHT * scale),
 	};
@@ -59,16 +60,24 @@ void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2f pos, U
 	SDL_RenderCopy(renderer, font, &src, &dst);
 }
 
-void render_text(SDL_Renderer* renderer, SDL_Texture* font, const char* text, Vec2f pos, Uint32 color, float scale, Vec2f cursor) {
-	size_t n = strlen(text);
+void render_text(SDL_Renderer* renderer, SDL_Texture* font, buffer_t* buf, Uint32 color, float scale) {
+	render_cursor(renderer, buf->cursor, 0xFFFFFFFF, scale);
+	
+	Vec2f pen = vec2f(0.0, 0.0);
+	for (size_t i = 0; i < buf->count; i++) {
+		line_t* line = buf->lines[(size_t)roundf(pen.y)];
 
-	Vec2f pen = pos;
-	for (size_t i = 0; i < n; i++) {
-		render_char(renderer, font, text[i], pen, color, scale);
-		pen.x += (float)FONT_CHAR_WIDTH * scale;
+		for (size_t i = 0; i < line->size; i++) {
+			if (vec2f_cmp(pen, buf->cursor)) {
+				render_char(renderer, font, line->chars[i], pen, 0x00000000, scale);
+			} else {
+				render_char(renderer, font, line->chars[i], pen, color, scale);
+			}
+			pen.x += 1;
+		}
+		pen.x = 0;
+		pen.y += 1;
 	}
-
-	render_cursor(renderer, cursor, 0xFFFFFFFF, scale);
 }
 
 int main() {
@@ -82,6 +91,8 @@ int main() {
 	
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, 0, SDL_RENDERER_ACCELERATED);
 	assert(renderer != NULL);
+
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     int w,h,n;
     unsigned char* font = stbi_load("charmap-oldschool_white.png", &w, &h, &n, STBI_rgb_alpha);
@@ -104,6 +115,7 @@ int main() {
 
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(font, w, h, depth, pitch, rmask, gmask, bmask, amask);
 	assert(surface != NULL);
+	SDL_SetColorKey(surface, SDL_TRUE, 0x00000000);
 
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	assert(texture != NULL);
@@ -133,7 +145,7 @@ int main() {
 								if (buffer->cursor.x > 0) buffer_move_cursor(buffer, vec2f(-1.0, 0.0));
 								break;
 							case SDLK_RIGHT:
-								if (buffer->cursor.x < buffer->size) buffer_move_cursor(buffer, vec2f(1.0, 0.0));
+								if (buffer->cursor.x < buffer->lines[(size_t)buffer->cursor.y]->size) buffer_move_cursor(buffer, vec2f(1.0, 0.0));
 								break;
 						}
 					}
@@ -145,7 +157,7 @@ int main() {
 			}
 		}
 
-		render_text(renderer, texture, buffer->text, vec2f(0.0, 0.0), 0xFF0000FF, 5.0f, vec2f((buffer->cursor.x * FONT_CHAR_WIDTH * 5), (buffer->cursor.y * FONT_CHAR_HEIGHT * 5)));
+		render_text(renderer, texture, buffer, 0xFFFFFFFF, 5.0f);
 		SDL_RenderPresent(renderer);
 	}
 

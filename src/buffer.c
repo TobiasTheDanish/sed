@@ -7,67 +7,84 @@
 #include <string.h>
 #include <stdlib.h>
 
-buffer_t* buffer_init(size_t cap) {
+line_t* line_init(size_t cap) {
+	line_t* line = malloc(sizeof(line_t));
+	line->cap = cap;
+	line->size = 0;
+	line->chars = calloc(cap, sizeof(char));
+
+	return line;
+}
+
+void line_resize(line_t *line) {
+	line->cap *= 2;
+	line->chars = realloc(line->chars, line->cap * sizeof(char));
+}
+
+void line_append(line_t* line, char* input) {
+	size_t input_size = strlen(input);
+
+	for(size_t i = 0; i < input_size; i++) {
+		line->chars[line->size++] = input[i];
+	}
+}
+
+void line_pop(line_t* line) {
+	line->chars[line->size--] = 0;
+}
+
+buffer_t* buffer_init(size_t line_cap) {
 	buffer_t* buf = malloc(sizeof(buffer_t));
-	buf->size = 0;
-	buf->cap = cap;
-	buf->text = calloc(cap, sizeof(char));
+	buf->count = 1;
+	buf->lines = malloc(sizeof(line_t*));
+	buf->lines[0] = line_init(line_cap);
 	buf->cursor = vec2f(0.0, 0.0);
 
 	return buf;
 }
 
-void buffer_append(buffer_t* buf, char* input) {
-	size_t input_size = strlen(input);
-	assert((buf->size + input_size) < buf->cap);
-
-	for(size_t i = 0; i < input_size; i++) {
-		buf->text[buf->size++] = input[i];
-	}
-	buffer_move_cursor(buf, vec2f(input_size, 0.0));
-}
-
-void buffer_pop(buffer_t* buf) {
-	buf->size -= 1;
-	buf->text[buf->size] = 0;
-	buffer_move_cursor(buf, vec2f(-1.0, 0.0));
-}
-
 void buffer_insert(buffer_t* buf, char* input) {
 	size_t input_size = strlen(input);
-	assert((buf->size + input_size) < buf->cap);
+	line_t* line = buf->lines[(size_t)buf->cursor.y];
 
-	if (buf->size == 0 || buf->size == (size_t)roundf(buf->cursor.x)) {
-		buffer_append(buf, input);
+	if (line->size + input_size >= line->cap) {
+		line_resize(line);
+	}
+
+	if (line->size == 0 || line->size == (size_t)roundf(buf->cursor.x)) {
+		line_append(line, input);
+		buffer_move_cursor(buf, vec2f(input_size, 0.0));
 		return;
 	}
 
-	for(size_t i = buf->size-1; i >= (size_t)buf->cursor.x; i--) {
-		buf->text[i + input_size] = buf->text[i];
+	for(size_t i = line->size-1; i >= (size_t)buf->cursor.x; i--) {
+		line->chars[i + input_size] = line->chars[i];
 	}
 
 	size_t i = 0;
 	while (i < input_size) {
-		buf->text[(size_t)buf->cursor.x++] = input[i++];
+		line->chars[line->size++] = input[i++];
 	}
-	buf->size += input_size;
+
+	buffer_move_cursor(buf, vec2f(input_size, 0.0));
 }
 
 void buffer_remove(buffer_t* buf) {
-	if ((size_t)floorf(buf->cursor.x) > buf->size || (size_t)roundf(buf->cursor.x) <= 0) {
+	line_t* line = buf->lines[(size_t)buf->cursor.y];
+	if ((size_t)floorf(buf->cursor.x) > line->size || (size_t)roundf(buf->cursor.x) <= 0) {
 		return ;
 	}
 
-	if (buf->size == (size_t)roundf(buf->cursor.x)) {
-		buffer_pop(buf);
+	if (line->size == (size_t)roundf(buf->cursor.x)) {
+		line_pop(line);
+		buffer_move_cursor(buf, vec2f(-1.0, 0.0));
 		return;
 	}
 
-	for (size_t i = (size_t)roundf(buf->cursor.x); i < buf->size; i++) {
-		buf->text[i-1] = buf->text[i];
+	for (size_t i = (size_t)roundf(buf->cursor.x); i < line->size; i++) {
+		line->chars[i-1] = line->chars[i];
 	}
-	buf->size -= 1;
-	buf->text[buf->size] = 0;
+	line->chars[line->size--] = 0;
 	buffer_move_cursor(buf, vec2f(-1.0, 0.0));
 }
 
