@@ -16,10 +16,14 @@ typedef struct {
 } buffer_t;
 
 line_t* line_init(size_t cap);
+void line_resize(line_t* line);
+
 buffer_t* buffer_init(size_t line_cap);
 void buffer_insert(buffer_t* buf, char* input);
 void buffer_remove(buffer_t* buf);
 void buffer_move_cursor(buffer_t* buf, Vec2f movement);
-void line_resize(line_t* line);
+void buffer_move_cursor_to(buffer_t* buf, Vec2f pos);
+void buffer_new_line(buffer_t* buf);
 
+float clamp_cursor_x(line_t* line, Vec2f cursor);
 #endif // !BUFFER_H

@@ -122,7 +122,7 @@ int main() {
 
 	bool quit = false;
 
-	buffer_t* buffer = buffer_init(1024);
+	buffer_t* buffer = buffer_init(80);
 
 	while (!quit) {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -138,6 +138,9 @@ int main() {
 				case SDL_KEYDOWN:
 					{
 						switch (event.key.keysym.sym) {
+							case SDLK_RETURN:
+								buffer_new_line(buffer);
+								break;
 							case SDLK_BACKSPACE:
 								buffer_remove(buffer);
 								break;
@@ -146,6 +149,14 @@ int main() {
 								break;
 							case SDLK_RIGHT:
 								if (buffer->cursor.x < buffer->lines[(size_t)buffer->cursor.y]->size) buffer_move_cursor(buffer, vec2f(1.0, 0.0));
+								break;
+							case SDLK_DOWN:
+								if (buffer->cursor.y < buffer->count-1)
+									buffer_move_cursor_to(buffer, vec2f(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y+1], buffer->cursor), buffer->cursor.y+1.0));
+								break;
+							case SDLK_UP:
+								if (buffer->cursor.y > 0)
+									buffer_move_cursor_to(buffer, vec2f(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y-1], buffer->cursor), buffer->cursor.y-1.0));
 								break;
 						}
 					}

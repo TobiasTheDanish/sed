@@ -61,9 +61,9 @@ void buffer_insert(buffer_t* buf, char* input) {
 		line->chars[i + input_size] = line->chars[i];
 	}
 
-	size_t i = 0;
-	while (i < input_size) {
-		line->chars[line->size++] = input[i++];
+	
+	for (size_t i = 0; i < input_size; i++) {
+		line->chars[(size_t)buf->cursor.x+i] = input[i];
 	}
 
 	buffer_move_cursor(buf, vec2f(input_size, 0.0));
@@ -90,4 +90,40 @@ void buffer_remove(buffer_t* buf) {
 
 void buffer_move_cursor(buffer_t *buf, Vec2f movement) {
 	buf->cursor = vec2f_add(buf->cursor, movement);
+}
+
+void buffer_move_cursor_to(buffer_t* buf, Vec2f pos) {
+	buf->cursor = pos;
+}
+
+void buffer_new_line(buffer_t* buf) {
+	line_t* cursor_line = buf->lines[(size_t)buf->cursor.y];
+
+	if (buf->cursor.y == buf->count-1 && 
+		buf->cursor.x == cursor_line->size) {
+		buf->count += 1;
+		buf->lines = realloc(buf->lines, buf->count * sizeof(line_t*));
+		buf->lines[buf->count-1] = line_init(80);
+		buffer_move_cursor_to(buf, vec2f(0.0, buf->cursor.y+1));
+	} else if (buf->cursor.x == cursor_line->size) {
+		buf->count += 1;
+		buf->lines = realloc(buf->lines, buf->count * sizeof(line_t*));
+
+		for (size_t i = buf->count-2; i > (size_t)buf->cursor.y; i--) {
+			buf->lines[i+1] = buf->lines[i];
+		}
+
+		buf->lines[(size_t)buf->cursor.y+1] = line_init(80);
+		buffer_move_cursor_to(buf, vec2f(0.0, buf->cursor.y+1));
+	}
+
+	printf("buf->count: %zu\n",buf->count);
+}
+
+float clamp_cursor_x(line_t* line, Vec2f cursor) {
+	if (line->size < cursor.x) {
+		return line->size;
+	} else {
+		return cursor.x;
+	}
 }
