@@ -17,10 +17,12 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -qq libsdl2-dev libglew-dev
-      - name: build ded
+          sudo apt-get install -qq libsdl2-dev
+      - name: build sed
         run: |
           make
+        env:
+          CC: gcc
   build-linux-clang:
     runs-on: ubuntu-22.04
     steps:
@@ -31,10 +33,12 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -qq libsdl2-dev libglew-dev
-      - name: build ded
+          sudo apt-get install -qq libsdl2-dev 
+      - name: build sed
         run: |
           make
+        env:
+          CC: gcc
   build-macos:
     runs-on: macOS-latest
     steps:
@@ -43,7 +47,9 @@ jobs:
         run: |
           mkdir build
       - name: install dependencies
-        run: brew install sdl2 pkg-config glew
-      - name: build ded
+        run: brew install sdl2 pkg-config 
+      - name: build sed
         run: |
           make
+        env:
+          CC: gcc
