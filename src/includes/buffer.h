@@ -12,7 +12,7 @@ typedef struct {
 typedef struct {
 	line_t** lines;
 	size_t count;
-	Vec2f cursor;
+	Vec2s cursor;
 } buffer_t;
 
 line_t* line_init(size_t cap);

@@ -25,7 +25,7 @@
 #define FONT_CHAR_WIDTH FONT_WIDTH / FONT_COLS
 #define FONT_CHAR_HEIGHT FONT_HEIGHT / FONT_ROWS
 
-void render_cursor(SDL_Renderer* renderer, Vec2f pos, Uint32 color, float scale) {
+void render_cursor(SDL_Renderer* renderer, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
 		.x = (int) (floorf(pos.x) * FONT_CHAR_WIDTH * scale),
 		.y = (int) (floorf(pos.y) * FONT_CHAR_HEIGHT * scale),
@@ -37,7 +37,7 @@ void render_cursor(SDL_Renderer* renderer, Vec2f pos, Uint32 color, float scale)
 	SDL_RenderFillRect(renderer, &cursor_rect);
 }
 
-void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2f pos, Uint32 color, float scale) {
+void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2s pos, Uint32 color, float scale) {
 	const size_t index = c - 32;
 	const size_t col = index % FONT_COLS;
 	const size_t row = index / FONT_COLS;
@@ -63,12 +63,12 @@ void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2f pos, U
 void render_text(SDL_Renderer* renderer, SDL_Texture* font, buffer_t* buf, Uint32 color, float scale) {
 	render_cursor(renderer, buf->cursor, 0xFFFFFFFF, scale);
 	
-	Vec2f pen = vec2f(0.0, 0.0);
+	Vec2s pen = vec2s(0.0, 0.0);
 	for (size_t i = 0; i < buf->count; i++) {
-		line_t* line = buf->lines[(size_t)roundf(pen.y)];
+		line_t* line = buf->lines[pen.y];
 
 		for (size_t i = 0; i < line->size; i++) {
-			if (vec2f_cmp(pen, buf->cursor)) {
+			if (vec2s_cmp(pen, buf->cursor)) {
 				render_char(renderer, font, line->chars[i], pen, 0x00000000, scale);
 			} else {
 				render_char(renderer, font, line->chars[i], pen, color, scale);
@@ -142,21 +142,24 @@ int main() {
 								buffer_new_line(buffer);
 								break;
 							case SDLK_BACKSPACE:
-								buffer_remove(buffer);
+								buffer_remove_front(buffer);
+								break;
+							case SDLK_DELETE:
+								buffer_remove_back(buffer);
 								break;
 							case SDLK_LEFT:
-								if (buffer->cursor.x > 0) buffer_move_cursor(buffer, vec2f(-1.0, 0.0));
+								if (buffer->cursor.x > 0) buffer_move_cursor(buffer, vec2s(-1, 0));
 								break;
 							case SDLK_RIGHT:
-								if (buffer->cursor.x < buffer->lines[(size_t)buffer->cursor.y]->size) buffer_move_cursor(buffer, vec2f(1.0, 0.0));
+								if (buffer->cursor.x < buffer->lines[(size_t)buffer->cursor.y]->size) buffer_move_cursor(buffer, vec2s(1, 0));
 								break;
 							case SDLK_DOWN:
 								if (buffer->cursor.y < buffer->count-1)
-									buffer_move_cursor_to(buffer, vec2f(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y+1], buffer->cursor), buffer->cursor.y+1.0));
+									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y+1], buffer->cursor), buffer->cursor.y+1.0));
 								break;
 							case SDLK_UP:
 								if (buffer->cursor.y > 0)
-									buffer_move_cursor_to(buffer, vec2f(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y-1], buffer->cursor), buffer->cursor.y-1.0));
+									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y-1], buffer->cursor), buffer->cursor.y-1.0));
 								break;
 						}
 					}
