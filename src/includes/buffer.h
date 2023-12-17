@@ -20,11 +20,13 @@ void line_resize(line_t* line);
 
 buffer_t* buffer_init(size_t line_cap);
 void buffer_insert(buffer_t* buf, char* input);
-void buffer_remove(buffer_t* buf);
-void buffer_move_cursor(buffer_t* buf, Vec2f movement);
-void buffer_move_cursor_to(buffer_t* buf, Vec2f pos);
+void buffer_remove_front(buffer_t* buf);
+void buffer_remove_back(buffer_t* buf);
+void buffer_move_cursor(buffer_t* buf, Vec2s movement);
+void buffer_move_cursor_to(buffer_t* buf, Vec2s pos);
 void buffer_new_line(buffer_t* buf);
-void buffer_join_lines(buffer_t* buf, line_t* a, line_t* b);
+void buffer_join_front(buffer_t* buf);
+void buffer_join_back(buffer_t* buf);
 
-float clamp_cursor_x(line_t* line, Vec2f cursor);
+float clamp_cursor_x(line_t* line, Vec2s cursor);
 #endif // !BUFFER_H
