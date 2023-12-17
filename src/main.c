@@ -184,11 +184,11 @@ int main(int argc, char** argv) {
 								break;
 							case SDLK_DOWN:
 								if (buffer->cursor.y < buffer->count-1)
-									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y+1], buffer->cursor), buffer->cursor.y+1.0));
+									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[buffer->cursor.y+1], buffer->cursor), buffer->cursor.y+1.0));
 								break;
 							case SDLK_UP:
 								if (buffer->cursor.y > 0)
-									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[(size_t)buffer->cursor.y-1], buffer->cursor), buffer->cursor.y-1.0));
+									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[buffer->cursor.y-1], buffer->cursor), buffer->cursor.y-1.0));
 								break;
 						}
 					}
