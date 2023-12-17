@@ -9,9 +9,12 @@
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL.h>
 #include <math.h>
+#include <stddef.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "includes/stb_image.h"
+#define FILE_READER_IMPL
+#include "includes/file_reader.h"
 #include "includes/algebra.h"
 
 #include <assert.h>
@@ -80,7 +83,35 @@ void render_text(SDL_Renderer* renderer, SDL_Texture* font, buffer_t* buf, Uint3
 	}
 }
 
-int main() {
+void print_usage() {
+	printf("Usage:\n");
+	printf("     - sed <filepath> : opens editor at filepath\n");
+}
+
+int main(int argc, char** argv) {
+	if (argc != 2) {
+		print_usage();
+		return 1;
+	}
+	char* filepath = argv[1];
+
+	size_t line_count = 0;
+	char** lines = read_lines(filepath, &line_count);
+
+	buffer_t* buffer;
+
+	if (line_count == 0) {
+		//TODO
+	} else {
+		buffer = buffer_init(80);
+
+		buffer_insert(buffer, lines[0]);
+		for (size_t i = 1; i < line_count; i++) {
+			buffer_new_line(buffer);
+			buffer_insert(buffer, lines[i]);
+		}
+	}
+
 	SDL_Init(SDL_INIT_VIDEO);
 
 	SDL_Window* window = SDL_CreateWindow("Text editor",
@@ -121,8 +152,6 @@ int main() {
 	assert(texture != NULL);
 
 	bool quit = false;
-
-	buffer_t* buffer = buffer_init(80);
 
 	while (!quit) {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
