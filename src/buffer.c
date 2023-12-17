@@ -171,15 +171,15 @@ void buffer_join_front(buffer_t* buf) {
 		line_resize(dst);
 	}
 
-	if (src->size > 0 && dst->size > 0) {
+	if (src->size > 0) {
 		memmove(&dst->chars[dst->size], src->chars, src->size);
+		dst->size += src->size;
 	}
 
-	for (size_t i = buf->cursor.y+1; i < buf->count-1; i++) {
+	for (size_t i = buf->cursor.y; i < buf->count-1; i++) {
 		memmove(buf->lines[i], buf->lines[i+1], sizeof(line_t));
 	}
 
-	dst->size += src->size;
 
 	buf->count -= 1;
 }
@@ -192,15 +192,14 @@ void buffer_join_back(buffer_t* buf) {
 		line_resize(dst);
 	}
 
-	if (src->size > 0 && dst->size > 0) {
+	if (src->size > 0) {
 		memmove(&dst->chars[dst->size], src->chars, src->size);
+		dst->size += src->size;
 	}
 
 	for (size_t i = buf->cursor.y+1; i < buf->count-1; i++) {
 		memmove(buf->lines[i], buf->lines[i+1], sizeof(line_t));
 	}
-
-	dst->size += src->size;
 
 	buf->count -= 1;
 }
