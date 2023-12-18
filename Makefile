@@ -4,11 +4,11 @@ SDL2FLAGS = $(shell pkg-config sdl2 --cflags --libs) -lm
 SOURCEDIR = src
 BUILDDIR = build
 
-EXEC = text-editor
+EXEC = sed
 SOURCES = $(wildcard $(SOURCEDIR)/*.c)
 OBJECTS = $(patsubst $(SOURCEDIR)/%.c,$(BUILDDIR)/%.o,$(SOURCES))
 
-$(BUILDDIR)/$(EXEC): $(OBJECTS)
+$(EXEC): $(OBJECTS)
 	$(CC) $^ -o $@ $(SDL2FLAGS) 
 
 $(OBJECTS): $(BUILDDIR)/%.o : $(SOURCEDIR)/%.c
@@ -22,6 +22,7 @@ dir:
 
 clean: 
 	-rm build/*
+	-rm $(EXEC)
 
 rebuild:
 	make clean
