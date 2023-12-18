@@ -95,23 +95,6 @@ int main(int argc, char** argv) {
 	}
 	char* filepath = argv[1];
 
-	size_t line_count = 0;
-	char** lines = read_lines(filepath, &line_count);
-
-	buffer_t* buffer;
-
-	if (line_count == 0) {
-		//TODO
-	} else {
-		buffer = buffer_init(80);
-
-		buffer_insert(buffer, lines[0]);
-		for (size_t i = 1; i < line_count; i++) {
-			buffer_new_line(buffer);
-			buffer_insert(buffer, lines[i]);
-		}
-	}
-
 	SDL_Init(SDL_INIT_VIDEO);
 
 	SDL_Window* window = SDL_CreateWindow("Text editor",
@@ -153,6 +136,11 @@ int main(int argc, char** argv) {
 
 	bool quit = false;
 
+	editor_t editor = {0};
+	editor_init(80, &editor);
+
+	editor_load_file(&editor, filepath);
+
 	while (!quit) {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
@@ -168,39 +156,49 @@ int main(int argc, char** argv) {
 					{
 						switch (event.key.keysym.sym) {
 							case SDLK_RETURN:
-								buffer_new_line(buffer);
+								buffer_new_line(editor.buf);
 								break;
 							case SDLK_BACKSPACE:
-								buffer_remove_front(buffer);
+								buffer_remove_front(editor.buf);
 								break;
 							case SDLK_DELETE:
-								buffer_remove_back(buffer);
+								buffer_remove_back(editor.buf);
 								break;
 							case SDLK_LEFT:
-								if (buffer->cursor.x > 0) buffer_move_cursor(buffer, vec2s(-1, 0));
+								if (editor.buf->cursor.x > 0) buffer_move_cursor(editor.buf, vec2s(-1, 0));
 								break;
 							case SDLK_RIGHT:
-								if (buffer->cursor.x < buffer->lines[(size_t)buffer->cursor.y]->size) buffer_move_cursor(buffer, vec2s(1, 0));
+								if (editor.buf->cursor.x < editor.buf->lines[editor.buf->cursor.y]->size) buffer_move_cursor(editor.buf, vec2s(1, 0));
 								break;
 							case SDLK_DOWN:
-								if (buffer->cursor.y < buffer->count-1)
-									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[buffer->cursor.y+1], buffer->cursor), buffer->cursor.y+1.0));
+								if (editor.buf->cursor.y < editor.buf->count-1)
+									buffer_move_cursor_to(editor.buf, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y+1], editor.buf->cursor), editor.buf->cursor.y+1.0));
 								break;
 							case SDLK_UP:
-								if (buffer->cursor.y > 0)
-									buffer_move_cursor_to(buffer, vec2s(clamp_cursor_x(buffer->lines[buffer->cursor.y-1], buffer->cursor), buffer->cursor.y-1.0));
+								if (editor.buf->cursor.y > 0)
+									buffer_move_cursor_to(editor.buf, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y-1], editor.buf->cursor), editor.buf->cursor.y-1.0));
 								break;
+							case SDLK_w: {
+									if (event.key.keysym.mod == KMOD_LCTRL) {
+										if (filepath != NULL) {
+											printf("CTRL_W pressed\n");
+											editor_write_file(&editor, filepath);
+										}
+									}
+								}
+								break;
+
 						}
 					}
 					break;
 
 				case SDL_TEXTINPUT: 
-					buffer_insert(buffer, event.text.text);
+					buffer_insert(editor.buf, event.text.text);
 					break;
 			}
 		}
 
-		render_text(renderer, texture, buffer, 0xFFFFFFFF, 5.0f);
+		render_text(renderer, texture, editor.buf, 0xFFFFFFFF, 5.0f);
 		SDL_RenderPresent(renderer);
 	}
 

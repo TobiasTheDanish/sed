@@ -15,6 +15,10 @@ typedef struct {
 	Vec2s cursor;
 } buffer_t;
 
+typedef struct {
+	buffer_t* buf;
+} editor_t;
+
 line_t* line_init(size_t cap);
 void line_resize(line_t* line);
 
@@ -27,6 +31,10 @@ void buffer_move_cursor_to(buffer_t* buf, Vec2s pos);
 void buffer_new_line(buffer_t* buf);
 void buffer_join_front(buffer_t* buf);
 void buffer_join_back(buffer_t* buf);
+
+void editor_init(size_t line_cap, editor_t* editor);
+void editor_load_file(editor_t* editor, char* filepath);
+void editor_write_file(editor_t* editor, char* filepath);
 
 float clamp_cursor_x(line_t* line, Vec2s cursor);
 #endif // !BUFFER_H

@@ -1,5 +1,7 @@
 #include "includes/buffer.h"
 #include "includes/algebra.h"
+#include "includes/file_reader.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stddef.h>
@@ -210,4 +212,37 @@ float clamp_cursor_x(line_t* line, Vec2s cursor) {
 	} else {
 		return cursor.x;
 	}
+}
+
+void editor_init(size_t line_cap, editor_t* editor) {
+	editor->buf = buffer_init(line_cap);
+}
+
+void editor_load_file(editor_t *editor, char *filepath) {
+	size_t line_count = 0;
+	char** lines = read_lines(filepath, &line_count);
+
+	if (line_count != 0) {
+		buffer_insert(editor->buf, lines[0]);
+		for (size_t i = 1; i < line_count; i++) {
+			buffer_new_line(editor->buf);
+			buffer_insert(editor->buf, lines[i]);
+		}
+	}
+}
+
+void editor_write_file(editor_t* editor, char* filepath) {
+	char** lines = malloc(editor->buf->count * sizeof(char*));
+	for (size_t i = 0; i < editor->buf->count; i++) {
+		line_t* line = editor->buf->lines[i];
+		if (line->size != 0) {
+			lines[i] = calloc(line->size, sizeof(char));
+
+			memmove(lines[i], line->chars, line->size);
+		} else {
+			lines[i] = calloc(1, sizeof(char));
+		}
+	}
+
+	write_lines(filepath, lines, editor->buf->count);
 }
