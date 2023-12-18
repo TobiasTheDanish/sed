@@ -25,7 +25,8 @@ make
 ### Features
 
 -[x] Multiline text editing
--[ ] Read/write text from/to file
+-[x] Read/write text from/to file
+-[ ] Scrolling of window
 -[ ] Fast text navigation (vim motions)
 -[ ] Syntax highlighting
 
