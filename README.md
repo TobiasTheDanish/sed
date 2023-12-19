@@ -24,12 +24,12 @@ make
 
 ### Features
 
--[x] Multiline text editing
--[x] Read/write text from/to file
--[ ] Zoom in/out
--[ ] Scrolling of window
--[ ] Fast text navigation (vim motions)
--[ ] Syntax highlighting
+- [x] Multiline text editing
+- [x] Read/write text from/to file
+- [ ] Zoom in/out
+- [ ] Scrolling of window
+- [ ] Fast text navigation (vim motions)
+- [ ] Syntax highlighting
 
 
 ### Known bugs
