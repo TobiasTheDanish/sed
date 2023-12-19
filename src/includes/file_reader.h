@@ -39,11 +39,10 @@ char* read_file(char* filepath, size_t* size) {
 char** read_lines(char* filepath, size_t* size) {
 	size_t line_size = 0;
 	size_t cur_line_cap = 1024;
-	size_t line_count = *size;
-	line_count = 1;
+	size_t line_count = 1;
 	size_t line_cap = 1024;
-	char** lines = (char**)calloc(line_cap, sizeof(char*));
-	lines[line_count-1] = (char*)calloc(cur_line_cap, sizeof(char));
+	char** lines = calloc(line_cap, sizeof(char*));
+	lines[line_count-1] = calloc(cur_line_cap, sizeof(char));
 
 	FILE* f = fopen(filepath, "r");
 	assert(f != NULL && "Could not open file\n");
@@ -54,10 +53,10 @@ char** read_lines(char* filepath, size_t* size) {
 		if (c == '\n') {
 			if (line_count >= line_cap) {
 				line_cap *= 1.5;
-				lines = (char**) calloc(line_cap, sizeof(char*));
+				lines = calloc(line_cap, sizeof(char*));
 			}
 
-			lines[line_count++] = (char*)calloc(cur_line_cap, sizeof(char));
+			lines[line_count++] = calloc(cur_line_cap, sizeof(char));
 			line_size = 0;
 			continue;
 		}

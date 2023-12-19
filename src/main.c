@@ -192,13 +192,13 @@ int main(int argc, char** argv) {
 					}
 					break;
 
-				case SDL_TEXTINPUT: 
+				case SDL_TEXTINPUT:
 					buffer_insert(editor.buf, event.text.text);
 					break;
 			}
 		}
 
-		render_text(renderer, texture, editor.buf, 0xFFFFFFFF, 5.0f);
+		render_text(renderer, texture, editor.buf, 0xFFFFFFFF, editor.scale);
 		SDL_RenderPresent(renderer);
 	}
 

@@ -38,7 +38,7 @@ void line_pop(line_t* line) {
 buffer_t* buffer_init(size_t line_cap) {
 	buffer_t* buf = malloc(sizeof(buffer_t));
 	buf->count = 1;
-	buf->lines = malloc(sizeof(line_t*));
+	buf->lines = calloc(buf->count, sizeof(line_t*));
 	buf->lines[0] = line_init(line_cap);
 	buf->cursor = vec2s(0, 0);
 
@@ -216,6 +216,7 @@ float clamp_cursor_x(line_t* line, Vec2s cursor) {
 
 void editor_init(size_t line_cap, editor_t* editor) {
 	editor->buf = buffer_init(line_cap);
+	editor->scale = 5.0;
 }
 
 void editor_load_file(editor_t *editor, char *filepath) {
@@ -224,19 +225,21 @@ void editor_load_file(editor_t *editor, char *filepath) {
 
 	if (line_count != 0) {
 		buffer_insert(editor->buf, lines[0]);
-		for (size_t i = 1; i < line_count; i++) {
+		for (size_t i = 1; i < line_count-1; i++) {
 			buffer_new_line(editor->buf);
 			buffer_insert(editor->buf, lines[i]);
 		}
+
+		buffer_move_cursor_to(editor->buf, vec2s(0, 0));
 	}
 }
 
 void editor_write_file(editor_t* editor, char* filepath) {
-	char** lines = malloc(editor->buf->count * sizeof(char*));
+	char** lines = calloc(editor->buf->count, sizeof(char*));
 	for (size_t i = 0; i < editor->buf->count; i++) {
 		line_t* line = editor->buf->lines[i];
 		if (line->size != 0) {
-			lines[i] = calloc(line->size, sizeof(char));
+			lines[i] = calloc(line->size+1, sizeof(char));
 
 			memmove(lines[i], line->chars, line->size);
 		} else {

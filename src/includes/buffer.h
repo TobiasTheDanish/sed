@@ -17,6 +17,7 @@ typedef struct {
 
 typedef struct {
 	buffer_t* buf;
+	float scale;
 } editor_t;
 
 line_t* line_init(size_t cap);
