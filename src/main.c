@@ -181,7 +181,6 @@ int main(int argc, char** argv) {
 							case SDLK_w: {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
 										if (filepath != NULL) {
-											printf("CTRL_W pressed\n");
 											editor_write_file(&editor, filepath);
 										}
 									}
