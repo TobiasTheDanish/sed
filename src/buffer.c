@@ -249,3 +249,10 @@ void editor_write_file(editor_t* editor, char* filepath) {
 
 	write_lines(filepath, lines, editor->buf->count);
 }
+
+void editor_zoom(editor_t* editor, float mod) {
+	float new_scale = editor->scale + mod;
+	if (new_scale >= 1 && new_scale <= 15) {
+		editor->scale = new_scale;
+	}
+}

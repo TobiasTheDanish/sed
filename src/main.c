@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 #include <math.h>
 #include <stddef.h>
+#include <string.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "includes/stb_image.h"
@@ -142,6 +143,7 @@ int main(int argc, char** argv) {
 	editor_load_file(&editor, filepath);
 
 	while (!quit) {
+		bool didZoom = false;
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
@@ -187,12 +189,30 @@ int main(int argc, char** argv) {
 								}
 								break;
 
+							case SDLK_PLUS: {
+									if (event.key.keysym.mod == KMOD_LCTRL) {
+										editor_zoom(&editor, 1.0);
+										didZoom = true;
+									}
+								}
+								break;
+
+							case SDLK_MINUS: {
+									if (event.key.keysym.mod == KMOD_LCTRL) {
+										editor_zoom(&editor, -1.0);
+										didZoom = true;
+									}
+								}
+								break;
+
 						}
 					}
 					break;
 
 				case SDL_TEXTINPUT:
-					buffer_insert(editor.buf, event.text.text);
+					if (!((strcmp(event.text.text, "+") == 0 || strcmp(event.text.text, "-") == 0) && didZoom)) {
+						buffer_insert(editor.buf, event.text.text);
+					}
 					break;
 			}
 		}

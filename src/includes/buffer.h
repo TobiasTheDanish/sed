@@ -33,9 +33,11 @@ void buffer_new_line(buffer_t* buf);
 void buffer_join_front(buffer_t* buf);
 void buffer_join_back(buffer_t* buf);
 
+float clamp_cursor_x(line_t* line, Vec2s cursor);
+
 void editor_init(size_t line_cap, editor_t* editor);
 void editor_load_file(editor_t* editor, char* filepath);
 void editor_write_file(editor_t* editor, char* filepath);
+void editor_zoom(editor_t* editor, float mod);
 
-float clamp_cursor_x(line_t* line, Vec2s cursor);
 #endif // !BUFFER_H
