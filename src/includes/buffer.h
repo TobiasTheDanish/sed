@@ -27,7 +27,7 @@ buffer_t* buffer_init(size_t line_cap);
 void buffer_insert(buffer_t* buf, char* input);
 void buffer_remove_front(buffer_t* buf);
 void buffer_remove_back(buffer_t* buf);
-void buffer_move_cursor(buffer_t* buf, Vec2s movement);
+void buffer_move_cursor_by(buffer_t* buf, Vec2s movement);
 void buffer_move_cursor_to(buffer_t* buf, Vec2s pos);
 void buffer_new_line(buffer_t* buf);
 void buffer_join_front(buffer_t* buf);

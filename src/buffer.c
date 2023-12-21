@@ -55,7 +55,7 @@ void buffer_insert(buffer_t* buf, char* input) {
 
 	if (line->size == 0 || line->size == buf->cursor.x) {
 		line_append(line, input);
-		buffer_move_cursor(buf, vec2s(input_size, 0.0));
+		buffer_move_cursor_by(buf, vec2s(input_size, 0.0));
 		return;
 	}
 
@@ -68,7 +68,7 @@ void buffer_insert(buffer_t* buf, char* input) {
 		line->chars[buf->cursor.x+i] = input[i];
 	}
 
-	buffer_move_cursor(buf, vec2s(input_size, 0.0));
+	buffer_move_cursor_by(buf, vec2s(input_size, 0.0));
 }
 
 void buffer_remove_front(buffer_t* buf) {
@@ -79,7 +79,7 @@ void buffer_remove_front(buffer_t* buf) {
 
 	if (line->size == buf->cursor.x && buf->cursor.x != 0) {
 		line_pop(line);
-		buffer_move_cursor(buf, vec2s(-1, 0));
+		buffer_move_cursor_by(buf, vec2s(-1, 0));
 		return;
 	} else if (buf->cursor.x == 0) {
 		size_t dest_size = buf->lines[buf->cursor.y-1]->size;
@@ -92,7 +92,7 @@ void buffer_remove_front(buffer_t* buf) {
 		line->chars[i-1] = line->chars[i];
 	}
 	line->chars[line->size--] = 0;
-	buffer_move_cursor(buf, vec2s(-1, 0));
+	buffer_move_cursor_by(buf, vec2s(-1, 0));
 }
 
 void buffer_remove_back(buffer_t* buf) {
@@ -115,7 +115,7 @@ void buffer_remove_back(buffer_t* buf) {
 	line->chars[line->size--] = 0;
 }
 
-void buffer_move_cursor(buffer_t *buf, Vec2s movement) {
+void buffer_move_cursor_by(buffer_t *buf, Vec2s movement) {
 	buf->cursor = vec2s_add(buf->cursor, movement);
 }
 

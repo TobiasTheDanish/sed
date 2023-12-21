@@ -167,18 +167,24 @@ int main(int argc, char** argv) {
 								buffer_remove_back(editor.buf);
 								break;
 							case SDLK_LEFT:
-								if (editor.buf->cursor.x > 0) buffer_move_cursor(editor.buf, vec2s(-1, 0));
+								if (editor.buf->cursor.x > 0) {
+									editor_move_cursor_by(&editor, vec2s(-1, 0));
+								}
 								break;
 							case SDLK_RIGHT:
-								if (editor.buf->cursor.x < editor.buf->lines[editor.buf->cursor.y]->size) buffer_move_cursor(editor.buf, vec2s(1, 0));
+								if (editor.buf->cursor.x < editor.buf->lines[editor.buf->cursor.y]->size) {
+									editor_move_cursor_by(&editor, vec2s(1, 0));
+								}
 								break;
 							case SDLK_DOWN:
-								if (editor.buf->cursor.y < editor.buf->count-1)
-									buffer_move_cursor_to(editor.buf, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y+1], editor.buf->cursor), editor.buf->cursor.y+1.0));
+								if (editor.buf->cursor.y < editor.buf->count-1) {
+									editor_move_cursor_to(&editor, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y+1], editor.buf->cursor), editor.buf->cursor.y+1.0));
+								}
 								break;
 							case SDLK_UP:
-								if (editor.buf->cursor.y > 0)
-									buffer_move_cursor_to(editor.buf, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y-1], editor.buf->cursor), editor.buf->cursor.y-1.0));
+								if (editor.buf->cursor.y > 0) {
+									editor_move_cursor_to(&editor, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y-1], editor.buf->cursor), editor.buf->cursor.y-1.0));
+								}
 								break;
 							case SDLK_w: {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
