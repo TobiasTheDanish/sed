@@ -214,9 +214,13 @@ float clamp_cursor_x(line_t* line, Vec2s cursor) {
 	}
 }
 
-void editor_init(size_t line_cap, editor_t* editor) {
+void editor_init(size_t line_cap, editor_t* editor, size_t b, size_t r) {
 	editor->buf = buffer_init(line_cap);
 	editor->scale = 5.0;
+	editor->t = 0;
+	editor->b = b;
+	editor->l = 0;
+	editor->r = r;
 }
 
 void editor_load_file(editor_t *editor, char *filepath) {
@@ -255,4 +259,51 @@ void editor_zoom(editor_t* editor, float mod) {
 	if (new_scale >= 1 && new_scale <= 15) {
 		editor->scale = new_scale;
 	}
+}
+
+void editor_move_cursor_by(editor_t* editor, Vec2s movement) {
+	buffer_move_cursor_by(editor->buf, movement);
+
+	if (editor->buf->cursor.x > editor->r) {
+		size_t diff = editor->buf->cursor.x - editor->r;
+		editor_move_viewport_to(editor, editor->t, editor->b, editor->l+diff, editor->buf->cursor.x);
+	} else if (editor->buf->cursor.x < editor->l) {
+		size_t diff = editor->l - editor->buf->cursor.x;
+		editor_move_viewport_to(editor, editor->t, editor->b, editor->buf->cursor.x, editor->r-diff);
+	} else if (editor->buf->cursor.y < editor->t) {
+		size_t diff = editor->t - editor->buf->cursor.y;
+		editor_move_viewport_to(editor, editor->buf->cursor.y, editor->b-diff, editor->l, editor->r);
+	} else if (editor->buf->cursor.y > editor->b) {
+		size_t diff = editor->buf->cursor.y - editor->b;
+		editor_move_viewport_to(editor, editor->t+diff, editor->buf->cursor.y, editor->l, editor->r);
+	}
+}
+
+void editor_move_cursor_to(editor_t* editor, Vec2s pos) {
+	buffer_move_cursor_to(editor->buf, pos);
+
+	if (editor->buf->cursor.x > editor->r) {
+		size_t diff = editor->buf->cursor.x - editor->r;
+		editor_move_viewport_to(editor, editor->t, editor->b, editor->l+diff, editor->buf->cursor.x);
+	} else if (editor->buf->cursor.x < editor->l) {
+		size_t diff = editor->l - editor->buf->cursor.x;
+		editor_move_viewport_to(editor, editor->t, editor->b, editor->buf->cursor.x, editor->r-diff);
+	} else if (editor->buf->cursor.y < editor->t) {
+		size_t diff = editor->t - editor->buf->cursor.y;
+		editor_move_viewport_to(editor, editor->buf->cursor.y, editor->b-diff, editor->l, editor->r);
+	} else if (editor->buf->cursor.y > editor->b) {
+		size_t diff = editor->buf->cursor.y - editor->b;
+		editor_move_viewport_to(editor, editor->t+diff, editor->buf->cursor.y, editor->l, editor->r);
+	}
+}
+
+void editor_move_viewport_to(editor_t* editor, size_t t, size_t b, size_t l , size_t r) {
+	editor->t = t;
+	editor->b = b;
+	editor->l = l;
+	editor->r = r;
+}
+
+void editor_move_viewport_by(editor_t* editor, size_t t, size_t b, size_t l , size_t r) {
+	editor_move_viewport_to(editor, editor->t+t, editor->b+b, editor->l+l, editor->r+r);
 }

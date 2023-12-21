@@ -18,6 +18,7 @@ typedef struct {
 typedef struct {
 	buffer_t* buf;
 	float scale;
+	size_t t, b, l, r;
 } editor_t;
 
 line_t* line_init(size_t cap);
@@ -35,9 +36,13 @@ void buffer_join_back(buffer_t* buf);
 
 float clamp_cursor_x(line_t* line, Vec2s cursor);
 
-void editor_init(size_t line_cap, editor_t* editor);
+void editor_init(size_t line_cap, editor_t* editor, size_t b, size_t r);
 void editor_load_file(editor_t* editor, char* filepath);
 void editor_write_file(editor_t* editor, char* filepath);
 void editor_zoom(editor_t* editor, float mod);
+void editor_move_cursor_by(editor_t* editor, Vec2s movement);
+void editor_move_cursor_to(editor_t* editor, Vec2s pos);
+void editor_move_viewport_by(editor_t* editor, size_t t, size_t b, size_t l , size_t r);
+void editor_move_viewport_to(editor_t* editor, size_t t, size_t b, size_t l , size_t r);
 
 #endif // !BUFFER_H

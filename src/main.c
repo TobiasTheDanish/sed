@@ -28,11 +28,13 @@
 #define FONT_ROWS 7
 #define FONT_CHAR_WIDTH FONT_WIDTH / FONT_COLS
 #define FONT_CHAR_HEIGHT FONT_HEIGHT / FONT_ROWS
+#define VIEWPORT_COLS 800 / FONT_CHAR_WIDTH
+#define VIEWPORT_ROWS 600 / FONT_CHAR_HEIGHT
 
 void render_cursor(SDL_Renderer* renderer, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
-		.x = (int) (floorf(pos.x) * FONT_CHAR_WIDTH * scale),
-		.y = (int) (floorf(pos.y) * FONT_CHAR_HEIGHT * scale),
+		.x = (int)((float)pos.x * FONT_CHAR_WIDTH * scale),
+		.y = (int)((float)pos.y * FONT_CHAR_HEIGHT * scale),
 		.w = (int)floorf((float)FONT_CHAR_WIDTH * scale),
 		.h = (int)floorf((float)FONT_CHAR_HEIGHT * scale),
 	};
@@ -54,8 +56,8 @@ void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2s pos, U
 	};
 
 	const SDL_Rect dst = {
-		.x = (int)(floorf(pos.x) * FONT_CHAR_WIDTH * scale),
-		.y = (int)(floorf(pos.y) * FONT_CHAR_HEIGHT * scale),
+		.x = (int)((float)pos.x * FONT_CHAR_WIDTH * scale),
+		.y = (int)((float)pos.y * FONT_CHAR_HEIGHT * scale),
 		.w = (int)floorf((float)FONT_CHAR_WIDTH * scale),
 		.h = (int)floorf((float)FONT_CHAR_HEIGHT * scale),
 	};
@@ -64,18 +66,30 @@ void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2s pos, U
 	SDL_RenderCopy(renderer, font, &src, &dst);
 }
 
-void render_text(SDL_Renderer* renderer, SDL_Texture* font, buffer_t* buf, Uint32 color, float scale) {
-	render_cursor(renderer, buf->cursor, 0xFFFFFFFF, scale);
+void render_text(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Uint32 color) {
+	Vec2s cursor_in_viewport = vec2s_sub(editor->buf->cursor, vec2s(editor->l, editor->t));
+	render_cursor(renderer, cursor_in_viewport, 0xFFFFFFFF, editor->scale);
 	
-	Vec2s pen = vec2s(0.0, 0.0);
-	for (size_t i = 0; i < buf->count; i++) {
-		line_t* line = buf->lines[pen.y];
+	Vec2s pen = {
+		.x = 0,
+		.y = 0,
+	};
+	for (size_t y = editor->t; y < editor->buf->count; y++) {
+		if (y > editor->b) {
+			break;
+		}
 
-		for (size_t i = 0; i < line->size; i++) {
-			if (vec2s_cmp(pen, buf->cursor)) {
-				render_char(renderer, font, line->chars[i], pen, 0x00000000, scale);
+		line_t* line = editor->buf->lines[y];
+
+		for (size_t x = editor->l; x < line->size; x++) {
+			if (x > editor->r) {
+				break;
+			}
+
+			if (vec2s_cmp(pen, cursor_in_viewport)) {
+				render_char(renderer, font, line->chars[x], pen, 0x0000FF00, editor->scale);
 			} else {
-				render_char(renderer, font, line->chars[i], pen, color, scale);
+				render_char(renderer, font, line->chars[x], pen, color, editor->scale);
 			}
 			pen.x += 1;
 		}
@@ -138,7 +152,7 @@ int main(int argc, char** argv) {
 	bool quit = false;
 
 	editor_t editor = {0};
-	editor_init(80, &editor);
+	editor_init(80, &editor, (600 / (FONT_CHAR_HEIGHT*5)), (800 / (FONT_CHAR_WIDTH*5)));
 
 	editor_load_file(&editor, filepath);
 
@@ -223,7 +237,7 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		render_text(renderer, texture, editor.buf, 0xFFFFFFFF, editor.scale);
+		render_text(renderer, texture, &editor, 0xFFFFFFFF);
 		SDL_RenderPresent(renderer);
 	}
 
