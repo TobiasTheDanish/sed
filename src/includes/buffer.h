@@ -44,6 +44,7 @@ void editor_write_file(editor_t* editor, char* filepath);
 void editor_zoom(editor_t* editor, float mod);
 void editor_move_cursor_by(editor_t* editor, Vec2s movement);
 void editor_move_cursor_to(editor_t* editor, Vec2s pos);
+void editor_try_move_viewport(editor_t* editor);
 void editor_move_viewport_by(editor_t* editor, size_t t, size_t b, size_t l , size_t r);
 void editor_move_viewport_to(editor_t* editor, size_t t, size_t b, size_t l , size_t r);
 

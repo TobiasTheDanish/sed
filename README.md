@@ -1,6 +1,6 @@
 # sed (simple editor)
 
-sed is a simple text editor made as a side project, inspired by tsoding's [ded](https://github.com/tsoding/ded).
+sed is a simple text editor made as a side project, inspired by tsoding's [ded](https://github.com/tsoding/ded), though not as dramatic.
 
 ### Quick start
 

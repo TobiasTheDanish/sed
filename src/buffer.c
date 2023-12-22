@@ -237,6 +237,8 @@ void editor_resize(editor_t* editor, int w, int h, size_t font_width, size_t fon
 
 	editor->l = 0;
 	editor->r = (w / (font_width * editor->scale))-1;
+
+	editor_try_move_viewport(editor);
 }
 
 void editor_load_file(editor_t *editor, char *filepath) {
@@ -280,24 +282,16 @@ void editor_zoom(editor_t* editor, float mod) {
 void editor_move_cursor_by(editor_t* editor, Vec2s movement) {
 	buffer_move_cursor_by(editor->buf, movement);
 
-	if (editor->buf->cursor.x > editor->r) {
-		size_t diff = editor->buf->cursor.x - editor->r;
-		editor_move_viewport_to(editor, editor->t, editor->b, editor->l+diff, editor->buf->cursor.x);
-	} else if (editor->buf->cursor.x < editor->l) {
-		size_t diff = editor->l - editor->buf->cursor.x;
-		editor_move_viewport_to(editor, editor->t, editor->b, editor->buf->cursor.x, editor->r-diff);
-	} else if (editor->buf->cursor.y < editor->t) {
-		size_t diff = editor->t - editor->buf->cursor.y;
-		editor_move_viewport_to(editor, editor->buf->cursor.y, editor->b-diff, editor->l, editor->r);
-	} else if (editor->buf->cursor.y > editor->b) {
-		size_t diff = editor->buf->cursor.y - editor->b;
-		editor_move_viewport_to(editor, editor->t+diff, editor->buf->cursor.y, editor->l, editor->r);
-	}
+	editor_try_move_viewport(editor);
 }
 
 void editor_move_cursor_to(editor_t* editor, Vec2s pos) {
 	buffer_move_cursor_to(editor->buf, pos);
 
+	editor_try_move_viewport(editor);
+}
+
+void editor_try_move_viewport(editor_t* editor) {
 	if (editor->buf->cursor.x > editor->r) {
 		size_t diff = editor->buf->cursor.x - editor->r;
 		editor_move_viewport_to(editor, editor->t, editor->b, editor->l+diff, editor->buf->cursor.x);

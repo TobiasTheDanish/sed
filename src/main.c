@@ -182,12 +182,15 @@ int main(int argc, char** argv) {
 						switch (event.key.keysym.sym) {
 							case SDLK_RETURN:
 								buffer_new_line(editor.buf);
+								editor_try_move_viewport(&editor);
 								break;
 							case SDLK_BACKSPACE:
 								buffer_remove_front(editor.buf);
+								editor_try_move_viewport(&editor);
 								break;
 							case SDLK_DELETE:
 								buffer_remove_back(editor.buf);
+								editor_try_move_viewport(&editor);
 								break;
 							case SDLK_LEFT:
 								if (editor.buf->cursor.x > 0) {
@@ -244,6 +247,7 @@ int main(int argc, char** argv) {
 				case SDL_TEXTINPUT:
 					if (!((strcmp(event.text.text, "+") == 0 || strcmp(event.text.text, "-") == 0) && didZoom)) {
 						buffer_insert(editor.buf, event.text.text);
+						editor_try_move_viewport(&editor);
 					}
 					break;
 			}
