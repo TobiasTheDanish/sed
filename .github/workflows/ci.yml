@@ -22,7 +22,7 @@ jobs:
         run: |
           make
         env:
-          CC: clang
+          CC: gcc
   build-linux-clang:
     runs-on: ubuntu-22.04
     steps:
@@ -38,7 +38,7 @@ jobs:
         run: |
           make
         env:
-          CC: gcc
+          CC: clang
   build-macos:
     runs-on: macOS-latest
     steps:
