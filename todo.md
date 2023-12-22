@@ -12,3 +12,10 @@ setup for scrolling:
   - [x] Render using the viewport
   - [x] Make cursor move the viewport when at the edge of the viewport.
   - [x] Make viewport more responsive
+
+Setup for line numbers:
+
+  - [ ] Introduce padding around viewport
+  - [ ] Render current line number
+  - [ ] Render relative line numbers
+

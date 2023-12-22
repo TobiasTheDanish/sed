@@ -213,6 +213,7 @@ int main(int argc, char** argv) {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
 										if (filepath != NULL) {
 											editor_write_file(&editor, filepath);
+											printf("File saved!\n");
 										}
 									}
 								}
