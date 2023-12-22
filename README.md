@@ -18,7 +18,7 @@ mkdir build
 make
 
 # run the program
-./build/text-editor
+./sed <filepath>
 
 ```
 
@@ -27,7 +27,8 @@ make
 - [x] Multiline text editing
 - [x] Read/write text from/to file
 - [x] Zoom in/out
-- [ ] Scrolling of window
+- [x] Scrolling of window
+- [ ] Multiple files
 - [ ] Fast text navigation (vim motions)
 - [ ] Syntax highlighting
 

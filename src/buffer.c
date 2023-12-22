@@ -214,13 +214,29 @@ float clamp_cursor_x(line_t* line, Vec2s cursor) {
 	}
 }
 
-void editor_init(size_t line_cap, editor_t* editor, size_t b, size_t r) {
+void editor_init(size_t line_cap, editor_t* editor,int w, int h, size_t font_width, size_t font_height) {
 	editor->buf = buffer_init(line_cap);
 	editor->scale = 5.0;
+
+	editor->h = h;
+	editor->w = w;
+
 	editor->t = 0;
-	editor->b = b;
+	editor->b = (h / (font_height * editor->scale))-1;
+
 	editor->l = 0;
-	editor->r = r;
+	editor->r = (w / (font_width * editor->scale))-1;
+}
+
+void editor_resize(editor_t* editor, int w, int h, size_t font_width, size_t font_height) {
+	editor->h = h;
+	editor->w = w;
+
+	editor->t = 0;
+	editor->b = (h / (font_height * editor->scale))-1;
+
+	editor->l = 0;
+	editor->r = (w / (font_width * editor->scale))-1;
 }
 
 void editor_load_file(editor_t *editor, char *filepath) {

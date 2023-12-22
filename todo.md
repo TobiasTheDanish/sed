@@ -11,4 +11,4 @@ setup for scrolling:
   - [x] Introduce top, bot, left, right (viewport) to editor struct.
   - [x] Render using the viewport
   - [x] Make cursor move the viewport when at the edge of the viewport.
-  - [ ] Make viewport more responsive
+  - [x] Make viewport more responsive

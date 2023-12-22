@@ -14,22 +14,22 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "includes/stb_image.h"
-#define FILE_READER_IMPL
-#include "includes/file_reader.h"
 #include "includes/algebra.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
 
+#define DEFAULT_WINDOW_WIDTH 1600
+#define DEFAULT_WINDOW_HEIGHT 900
 #define FONT_WIDTH 128
 #define FONT_HEIGHT 64
 #define FONT_COLS 18
 #define FONT_ROWS 7
 #define FONT_CHAR_WIDTH FONT_WIDTH / FONT_COLS
 #define FONT_CHAR_HEIGHT FONT_HEIGHT / FONT_ROWS
-#define VIEWPORT_COLS 800 / FONT_CHAR_WIDTH
-#define VIEWPORT_ROWS 600 / FONT_CHAR_HEIGHT
+#define VIEWPORT_COLS DEFAULT_WINDOW_WIDTH / FONT_CHAR_WIDTH
+#define VIEWPORT_ROWS DEFAULT_WINDOW_HEIGHT / FONT_CHAR_HEIGHT
 
 void render_cursor(SDL_Renderer* renderer, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 
 	SDL_Window* window = SDL_CreateWindow("Text editor",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			800, 600,
+			DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT,
 			SDL_WINDOW_RESIZABLE);
 	assert(window != NULL);
 	
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
 	bool quit = false;
 
 	editor_t editor = {0};
-	editor_init(80, &editor, (600 / (FONT_CHAR_HEIGHT*5)), (800 / (FONT_CHAR_WIDTH*5)));
+	editor_init(80, &editor, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
 
 	editor_load_file(&editor, filepath);
 
@@ -166,6 +166,15 @@ int main(int argc, char** argv) {
 			switch (event.type) {
 				case SDL_QUIT:
 					quit = true;
+					break;
+
+				case SDL_WINDOWEVENT:
+					{
+						switch (event.window.event) {
+							case SDL_WINDOWEVENT_RESIZED:
+								editor_resize(&editor, event.window.data1, event.window.data2, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
+						}
+					}
 					break;
 
 				case SDL_KEYDOWN:
@@ -212,6 +221,7 @@ int main(int argc, char** argv) {
 							case SDLK_PLUS: {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
 										editor_zoom(&editor, 1.0);
+										editor_resize(&editor, editor.w, editor.h, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
 										didZoom = true;
 									}
 								}
@@ -220,6 +230,7 @@ int main(int argc, char** argv) {
 							case SDLK_MINUS: {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
 										editor_zoom(&editor, -1.0);
+										editor_resize(&editor, editor.w, editor.h, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
 										didZoom = true;
 									}
 								}
@@ -247,3 +258,8 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
+
+
+
+#define FILE_READER_IMPL
+#include "includes/file_reader.h"
