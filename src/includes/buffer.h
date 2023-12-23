@@ -20,6 +20,10 @@ typedef struct {
 	float scale;
 	int w, h;
 	size_t t, b, l, r;
+	size_t vp_w, vp_h;
+	Vec2s vp_origin;
+	Vec2s font_size;
+	size_t num_col_l, num_col_w;
 } editor_t;
 
 line_t* line_init(size_t cap);
@@ -37,8 +41,8 @@ void buffer_join_back(buffer_t* buf);
 
 float clamp_cursor_x(line_t* line, Vec2s cursor);
 
-void editor_init(size_t line_cap, editor_t* editor,int w, int h, size_t font_width, size_t font_height);
-void editor_resize(editor_t* editor, int w, int h, size_t font_width, size_t font_height);
+void editor_init(size_t line_cap, editor_t* editor,int w, int h);
+void editor_resize(editor_t* editor, int w, int h);
 void editor_load_file(editor_t* editor, char* filepath);
 void editor_write_file(editor_t* editor, char* filepath);
 void editor_zoom(editor_t* editor, float mod);

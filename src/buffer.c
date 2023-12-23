@@ -214,29 +214,28 @@ float clamp_cursor_x(line_t* line, Vec2s cursor) {
 	}
 }
 
-void editor_init(size_t line_cap, editor_t* editor,int w, int h, size_t font_width, size_t font_height) {
+void editor_init(size_t line_cap, editor_t* editor, int w, int h) {
 	editor->buf = buffer_init(line_cap);
-	editor->scale = 5.0;
+	editor->scale = 3.0;
 
-	editor->h = h;
-	editor->w = w;
-
-	editor->t = 0;
-	editor->b = (h / (font_height * editor->scale))-1;
-
-	editor->l = 0;
-	editor->r = (w / (font_width * editor->scale))-1;
+	editor_resize(editor, w, h);
 }
 
-void editor_resize(editor_t* editor, int w, int h, size_t font_width, size_t font_height) {
+void editor_resize(editor_t* editor, int w, int h) {
 	editor->h = h;
 	editor->w = w;
 
-	editor->t = 0;
-	editor->b = (h / (font_height * editor->scale))-1;
+	editor->vp_h = h;
+	editor->vp_w = (w - (editor->num_col_w * editor->font_size.x));
 
-	editor->l = 0;
-	editor->r = (w / (font_width * editor->scale))-1;
+	editor->vp_origin.x = editor->num_col_w;
+	editor->vp_origin.y = 0;
+
+	editor->t = editor->vp_origin.y;
+	editor->b = (editor->vp_h / (editor->font_size.y * editor->scale))-1;
+
+	editor->l = editor->vp_origin.x;
+	editor->r = (editor->vp_w / (editor->font_size.x * editor->scale))-1;
 
 	editor_try_move_viewport(editor);
 }
