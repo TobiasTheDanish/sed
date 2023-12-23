@@ -6,7 +6,7 @@ Setup for zooming:
   - [x] Use <CTRL +> to increase and <CTRL -> to decrease scale.
   - [x] Stop rendering of '+' and '-'
 
-setup for scrolling:
+Setup for scrolling:
 
   - [x] Introduce top, bot, left, right (viewport) to editor struct.
   - [x] Render using the viewport
@@ -15,7 +15,7 @@ setup for scrolling:
 
 Setup for line numbers:
 
-  - [ ] Introduce padding around viewport
-  - [ ] Render current line number
-  - [ ] Render relative line numbers
-
+  - [x] Introduce padding around viewport
+  - [x] Render current line number
+  - [x] Render relative line numbers
+  - [x] Stop rendering if file does not fill out viewport
