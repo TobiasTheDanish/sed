@@ -22,57 +22,110 @@
 
 #define DEFAULT_WINDOW_WIDTH 1600
 #define DEFAULT_WINDOW_HEIGHT 900
+
+#define NUM_COL_START 0
+#define NUM_COL_WIDTH 5
+
 #define FONT_WIDTH 128
 #define FONT_HEIGHT 64
 #define FONT_COLS 18
 #define FONT_ROWS 7
-#define FONT_CHAR_WIDTH FONT_WIDTH / FONT_COLS
-#define FONT_CHAR_HEIGHT FONT_HEIGHT / FONT_ROWS
-#define VIEWPORT_COLS DEFAULT_WINDOW_WIDTH / FONT_CHAR_WIDTH
-#define VIEWPORT_ROWS DEFAULT_WINDOW_HEIGHT / FONT_CHAR_HEIGHT
+#define FONT_CHAR_WIDTH (FONT_WIDTH / FONT_COLS)
+#define FONT_CHAR_HEIGHT (FONT_HEIGHT / FONT_ROWS)
 
-void render_cursor(SDL_Renderer* renderer, Vec2s pos, Uint32 color, float scale) {
+#define VIEWPORT_ORIGIN_X (NUM_COL_START + NUM_COL_WIDTH)
+#define VIEWPORT_ORIGIN_Y 0
+#define VIEWPORT_WIDTH (DEFAULT_WINDOW_WIDTH - (FONT_CHAR_WIDTH * NUM_COL_WIDTH))
+#define VIEWPORT_HEIGHT (DEFAULT_WINDOW_HEIGHT)
+#define VIEWPORT_COLS (DEFAULT_WINDOW_WIDTH / FONT_CHAR_WIDTH)
+#define VIEWPORT_ROWS (DEFAULT_WINDOW_HEIGHT / FONT_CHAR_HEIGHT)
+
+void render_cursor(SDL_Renderer* renderer, Vec2s font_size, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
-		.x = (int)((float)pos.x * FONT_CHAR_WIDTH * scale),
-		.y = (int)((float)pos.y * FONT_CHAR_HEIGHT * scale),
-		.w = (int)floorf((float)FONT_CHAR_WIDTH * scale),
-		.h = (int)floorf((float)FONT_CHAR_HEIGHT * scale),
+		.x = (int)((float)pos.x * font_size.x * scale),
+		.y = (int)((float)pos.y * font_size.y * scale),
+		.w = (int)floorf((float)font_size.x * scale),
+		.h = (int)floorf((float)font_size.y * scale),
 	};
 
 	SDL_SetRenderDrawColor(renderer, color , color >> (1*8), color >> (2*8), color >> (3*8));
 	SDL_RenderFillRect(renderer, &cursor_rect);
 }
 
-void render_char(SDL_Renderer* renderer, SDL_Texture* font, char c, Vec2s pos, Uint32 color, float scale) {
+void render_char(SDL_Renderer* renderer, SDL_Texture* font, Vec2s font_size, char c, Vec2s pos, Uint32 color, float scale) {
 	const size_t index = c - 32;
 	const size_t col = index % FONT_COLS;
 	const size_t row = index / FONT_COLS;
 
 	const SDL_Rect src = {
-		.x = col * FONT_CHAR_WIDTH,
-		.y = row * FONT_CHAR_HEIGHT,
-		.w = FONT_CHAR_WIDTH,
-		.h = FONT_CHAR_HEIGHT,
+		.x = col * font_size.x,
+		.y = row * font_size.y,
+		.w = font_size.x,
+		.h = font_size.y,
 	};
 
 	const SDL_Rect dst = {
-		.x = (int)((float)pos.x * FONT_CHAR_WIDTH * scale),
-		.y = (int)((float)pos.y * FONT_CHAR_HEIGHT * scale),
-		.w = (int)floorf((float)FONT_CHAR_WIDTH * scale),
-		.h = (int)floorf((float)FONT_CHAR_HEIGHT * scale),
+		.x = (int)((float)pos.x * font_size.x * scale),
+		.y = (int)((float)pos.y * font_size.y * scale),
+		.w = (int)floorf((float)font_size.x * scale),
+		.h = (int)floorf((float)font_size.y * scale),
 	};
 
 	SDL_SetTextureColorMod(font, color , color >> (1*8), color >> (2*8));
 	SDL_RenderCopy(renderer, font, &src, &dst);
 }
 
+void render_num_col(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Uint32 color) {
+	size_t cursor_row_in_viewport = editor->buf->cursor.y;
+	Vec2s pen = {
+		.x = (editor->num_col_l + editor->num_col_w)-2,
+		.y = 0,
+	};
+
+	for (size_t y = editor->t; y <= editor->b; y++) {
+		if (y >= editor->buf->count) {
+			break;
+		}
+
+		size_t current;
+		if (y == cursor_row_in_viewport) {
+			current = y+1;
+			size_t digit_count = 0;
+			while (current != 0) {
+				digit_count++;
+				current /= 10;
+			}
+			current = y+1;
+			pen.x = digit_count-1;
+		} else {
+			current = abs((int)y - (int)cursor_row_in_viewport);
+		}
+
+		size_t index = current % 10;
+
+		while (current != 0) {
+			char c = (char)index + 48;
+			render_char(renderer, font, editor->font_size, c, pen, color, editor->scale);
+
+			current /= 10;
+			index = current % 10;
+			pen.x -= 1;
+		}
+
+		pen.x = (editor->num_col_l + editor->num_col_w)-2,
+		pen.y += 1;
+	}
+}
+
 void render_text(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Uint32 color) {
 	Vec2s cursor_in_viewport = vec2s_sub(editor->buf->cursor, vec2s(editor->l, editor->t));
-	render_cursor(renderer, cursor_in_viewport, 0xFFFFFFFF, editor->scale);
+	cursor_in_viewport = vec2s_add(cursor_in_viewport, editor->vp_origin);
+
+	render_cursor(renderer, editor->font_size, cursor_in_viewport, 0xFFFFFFFF, editor->scale);
 	
 	Vec2s pen = {
-		.x = 0,
-		.y = 0,
+		.x = editor->vp_origin.x,
+		.y = editor->vp_origin.y,
 	};
 	for (size_t y = editor->t; y < editor->buf->count; y++) {
 		if (y > editor->b) {
@@ -87,13 +140,13 @@ void render_text(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Ui
 			}
 
 			if (vec2s_cmp(pen, cursor_in_viewport)) {
-				render_char(renderer, font, line->chars[x], pen, 0x0000FF00, editor->scale);
+				render_char(renderer, font, editor->font_size, line->chars[x], pen, 0x00000000, editor->scale);
 			} else {
-				render_char(renderer, font, line->chars[x], pen, color, editor->scale);
+				render_char(renderer, font, editor->font_size, line->chars[x], pen, color, editor->scale);
 			}
 			pen.x += 1;
 		}
-		pen.x = 0;
+		pen.x = editor->vp_origin.x,
 		pen.y += 1;
 	}
 }
@@ -152,7 +205,11 @@ int main(int argc, char** argv) {
 	bool quit = false;
 
 	editor_t editor = {0};
-	editor_init(80, &editor, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
+	editor.num_col_l = NUM_COL_START;
+	editor.num_col_w = NUM_COL_WIDTH;
+	editor.font_size.x = FONT_CHAR_WIDTH;
+	editor.font_size.y = FONT_CHAR_HEIGHT;
+	editor_init(80, &editor, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
 	editor_load_file(&editor, filepath);
 
@@ -172,7 +229,7 @@ int main(int argc, char** argv) {
 					{
 						switch (event.window.event) {
 							case SDL_WINDOWEVENT_RESIZED:
-								editor_resize(&editor, event.window.data1, event.window.data2, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
+								editor_resize(&editor, event.window.data1, event.window.data2);
 						}
 					}
 					break;
@@ -225,7 +282,7 @@ int main(int argc, char** argv) {
 							case SDLK_PLUS: {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
 										editor_zoom(&editor, 1.0);
-										editor_resize(&editor, editor.w, editor.h, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
+										editor_resize(&editor, editor.w, editor.h);
 										didZoom = true;
 									}
 								}
@@ -234,7 +291,7 @@ int main(int argc, char** argv) {
 							case SDLK_MINUS: {
 									if (event.key.keysym.mod == KMOD_LCTRL) {
 										editor_zoom(&editor, -1.0);
-										editor_resize(&editor, editor.w, editor.h, FONT_CHAR_WIDTH, FONT_CHAR_HEIGHT);
+										editor_resize(&editor, editor.w, editor.h);
 										didZoom = true;
 									}
 								}
@@ -253,6 +310,7 @@ int main(int argc, char** argv) {
 			}
 		}
 
+		render_num_col(renderer, texture, &editor, 0xFFFFFFFF);
 		render_text(renderer, texture, &editor, 0xFFFFFFFF);
 		SDL_RenderPresent(renderer);
 	}

@@ -253,6 +253,15 @@ void editor_load_file(editor_t *editor, char *filepath) {
 
 		buffer_move_cursor_to(editor->buf, vec2s(0, 0));
 	}
+
+	size_t digit_count = 1;
+	while (line_count != 0) {
+		digit_count++;
+		line_count /= 10;
+	}
+
+	editor->num_col_w = digit_count;
+	editor_resize(editor, editor->w, editor->h);
 }
 
 void editor_write_file(editor_t* editor, char* filepath) {
