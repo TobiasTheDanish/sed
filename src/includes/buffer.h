@@ -2,7 +2,15 @@
 #define BUFFER_H
 
 #include "algebra.h"
+#include <SDL2/SDL_events.h>
 #include <stddef.h>
+
+typedef enum {
+	NORMAL = 0,
+	INSERT = 1,
+	MODE_COUNT = 2,
+} editor_mode;
+
 typedef struct {
 	char* chars;
 	size_t size;
@@ -24,6 +32,9 @@ typedef struct {
 	Vec2s vp_origin;
 	Vec2s font_size;
 	size_t num_col_l, num_col_w;
+	size_t info_row_h;
+	editor_mode mode;
+	char* filepath;
 } editor_t;
 
 line_t* line_init(size_t cap);
@@ -51,5 +62,8 @@ void editor_move_cursor_to(editor_t* editor, Vec2s pos);
 void editor_try_move_viewport(editor_t* editor);
 void editor_move_viewport_by(editor_t* editor, size_t t, size_t b, size_t l , size_t r);
 void editor_move_viewport_to(editor_t* editor, size_t t, size_t b, size_t l , size_t r);
+const char* editor_get_mode_string(editor_t* editor);
+void editor_set_mode(editor_t* editor, editor_mode mode);
+void editor_handle_events(editor_t* editor, SDL_Event* event, bool* quit);
 
 #endif // !BUFFER_H

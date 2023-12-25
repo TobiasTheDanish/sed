@@ -19,3 +19,19 @@ Setup for line numbers:
   - [x] Render current line number
   - [x] Render relative line numbers
   - [x] Stop rendering if file does not fill out viewport
+
+Setup of multiple modes
+
+  - [x] Add mode enum
+  - [x] Add mode property to editor struct
+  - [x] Function to change modes
+  - [ ] Handle input for diferent modes
+  - [ ] Display current mode below viewport
+
+Setup for editor info row:
+
+  - [ ] Add info property to editor struct
+  - [ ] Render row below viewport
+
+
+

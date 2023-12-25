@@ -23,6 +23,7 @@
 #define DEFAULT_WINDOW_WIDTH 1600
 #define DEFAULT_WINDOW_HEIGHT 900
 
+#define INFO_ROW_HEIGHT 2
 #define NUM_COL_START 0
 #define NUM_COL_WIDTH 5
 
@@ -32,13 +33,6 @@
 #define FONT_ROWS 7
 #define FONT_CHAR_WIDTH (FONT_WIDTH / FONT_COLS)
 #define FONT_CHAR_HEIGHT (FONT_HEIGHT / FONT_ROWS)
-
-#define VIEWPORT_ORIGIN_X (NUM_COL_START + NUM_COL_WIDTH)
-#define VIEWPORT_ORIGIN_Y 0
-#define VIEWPORT_WIDTH (DEFAULT_WINDOW_WIDTH - (FONT_CHAR_WIDTH * NUM_COL_WIDTH))
-#define VIEWPORT_HEIGHT (DEFAULT_WINDOW_HEIGHT)
-#define VIEWPORT_COLS (DEFAULT_WINDOW_WIDTH / FONT_CHAR_WIDTH)
-#define VIEWPORT_ROWS (DEFAULT_WINDOW_HEIGHT / FONT_CHAR_HEIGHT)
 
 void render_cursor(SDL_Renderer* renderer, Vec2s font_size, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
@@ -205,6 +199,7 @@ int main(int argc, char** argv) {
 	bool quit = false;
 
 	editor_t editor = {0};
+	editor.info_row_h = INFO_ROW_HEIGHT;
 	editor.num_col_l = NUM_COL_START;
 	editor.num_col_w = NUM_COL_WIDTH;
 	editor.font_size.x = FONT_CHAR_WIDTH;
@@ -214,100 +209,12 @@ int main(int argc, char** argv) {
 	editor_load_file(&editor, filepath);
 
 	while (!quit) {
-		bool didZoom = false;
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 
 		SDL_Event event = {0};
 		while(SDL_PollEvent(&event)) {
-			switch (event.type) {
-				case SDL_QUIT:
-					quit = true;
-					break;
-
-				case SDL_WINDOWEVENT:
-					{
-						switch (event.window.event) {
-							case SDL_WINDOWEVENT_RESIZED:
-								editor_resize(&editor, event.window.data1, event.window.data2);
-						}
-					}
-					break;
-
-				case SDL_KEYDOWN:
-					{
-						switch (event.key.keysym.sym) {
-							case SDLK_RETURN:
-								buffer_new_line(editor.buf);
-								editor_try_move_viewport(&editor);
-								break;
-							case SDLK_BACKSPACE:
-								buffer_remove_front(editor.buf);
-								editor_try_move_viewport(&editor);
-								break;
-							case SDLK_DELETE:
-								buffer_remove_back(editor.buf);
-								editor_try_move_viewport(&editor);
-								break;
-							case SDLK_LEFT:
-								if (editor.buf->cursor.x > 0) {
-									editor_move_cursor_by(&editor, vec2s(-1, 0));
-								}
-								break;
-							case SDLK_RIGHT:
-								if (editor.buf->cursor.x < editor.buf->lines[editor.buf->cursor.y]->size) {
-									editor_move_cursor_by(&editor, vec2s(1, 0));
-								}
-								break;
-							case SDLK_DOWN:
-								if (editor.buf->cursor.y < editor.buf->count-1) {
-									editor_move_cursor_to(&editor, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y+1], editor.buf->cursor), editor.buf->cursor.y+1.0));
-								}
-								break;
-							case SDLK_UP:
-								if (editor.buf->cursor.y > 0) {
-									editor_move_cursor_to(&editor, vec2s(clamp_cursor_x(editor.buf->lines[editor.buf->cursor.y-1], editor.buf->cursor), editor.buf->cursor.y-1.0));
-								}
-								break;
-							case SDLK_w: {
-									if (event.key.keysym.mod == KMOD_LCTRL) {
-										if (filepath != NULL) {
-											editor_write_file(&editor, filepath);
-											printf("File saved!\n");
-										}
-									}
-								}
-								break;
-
-							case SDLK_PLUS: {
-									if (event.key.keysym.mod == KMOD_LCTRL) {
-										editor_zoom(&editor, 1.0);
-										editor_resize(&editor, editor.w, editor.h);
-										didZoom = true;
-									}
-								}
-								break;
-
-							case SDLK_MINUS: {
-									if (event.key.keysym.mod == KMOD_LCTRL) {
-										editor_zoom(&editor, -1.0);
-										editor_resize(&editor, editor.w, editor.h);
-										didZoom = true;
-									}
-								}
-								break;
-
-						}
-					}
-					break;
-
-				case SDL_TEXTINPUT:
-					if (!((strcmp(event.text.text, "+") == 0 || strcmp(event.text.text, "-") == 0) && didZoom)) {
-						buffer_insert(editor.buf, event.text.text);
-						editor_try_move_viewport(&editor);
-					}
-					break;
-			}
+			editor_handle_events(&editor, &event, &quit);
 		}
 
 		render_num_col(renderer, texture, &editor, 0xFFFFFFFF);
