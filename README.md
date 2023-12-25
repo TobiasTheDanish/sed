@@ -28,7 +28,7 @@ make
 - [x] Read/write text from/to file
 - [x] Zoom in/out
 - [x] Scrolling of window
-- [ ] Line numbers
+- [x] Line numbers
 - [ ] Multiple files
 - [ ] Fast text navigation (vim motions)
 - [ ] Syntax highlighting
