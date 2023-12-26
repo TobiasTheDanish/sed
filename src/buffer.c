@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_video.h>
 #include <assert.h>
 #include <math.h>
 #include <stddef.h>
@@ -381,18 +382,33 @@ void editor_input_normal_mode(editor_t* editor, SDL_Event* event) {
 		case SDL_TEXTINPUT:
 			break;
 
-		case SDL_WINDOWEVENT:
-			{
-				switch (event->window.event) {
-					case SDL_WINDOWEVENT_RESIZED:
-						editor_resize(editor, event->window.data1, event->window.data2);
-				}
-			}
-			break;
-
 		case SDL_KEYDOWN:
 			{
 				switch (event->key.keysym.sym) {
+					/* ------ NAVIGATION ------ */
+					case SDLK_LEFT:
+						if (editor->buf->cursor.x > 0) {
+							editor_move_cursor_by(editor, vec2s(-1, 0));
+						}
+						break;
+
+					case SDLK_RIGHT:
+						if (editor->buf->cursor.x < editor->buf->lines[editor->buf->cursor.y]->size) {
+							editor_move_cursor_by(editor, vec2s(1, 0));
+						}
+						break;
+
+					case SDLK_DOWN:
+						if (editor->buf->cursor.y < editor->buf->count-1) {
+							editor_move_cursor_to(editor, vec2s(clamp_cursor_x(editor->buf->lines[editor->buf->cursor.y+1], editor->buf->cursor), editor->buf->cursor.y+1.0));
+						}
+						break;
+
+					case SDLK_UP:
+						if (editor->buf->cursor.y > 0) {
+							editor_move_cursor_to(editor, vec2s(clamp_cursor_x(editor->buf->lines[editor->buf->cursor.y-1], editor->buf->cursor), editor->buf->cursor.y-1.0));
+						}
+						break;
 					case SDLK_h:
 						if (editor->buf->cursor.x > 0) {
 							editor_move_cursor_by(editor, vec2s(-1, 0));
@@ -414,10 +430,17 @@ void editor_input_normal_mode(editor_t* editor, SDL_Event* event) {
 						}
 						break;
 
+					/* ------ TEXT EDITING ------ */
+					case SDLK_x:
+						buffer_remove_back(editor->buf);
+						break;
+
+					/* ------ MODES ------ */
 					case SDLK_i: 
 						editor_set_mode(editor, INSERT);
 						break;
 
+					/* ------ MISCELANOUS ------ */
 					case SDLK_w: {
 							 if (event->key.keysym.mod & KMOD_CTRL) {
 								 if (editor->filepath != NULL) {
