@@ -25,8 +25,8 @@ Setup of multiple modes
   - [x] Add mode enum
   - [x] Add mode property to editor struct
   - [x] Function to change modes
-  - [ ] Handle input for diferent modes
-  - [ ] Display current mode below viewport
+  - [x] Handle input for different modes
+  - [x] Display current mode below viewport
 
 Setup for editor info row:
 

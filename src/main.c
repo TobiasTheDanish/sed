@@ -34,7 +34,19 @@
 #define FONT_CHAR_WIDTH (FONT_WIDTH / FONT_COLS)
 #define FONT_CHAR_HEIGHT (FONT_HEIGHT / FONT_ROWS)
 
-void render_cursor(SDL_Renderer* renderer, Vec2s font_size, Vec2s pos, Uint32 color, float scale) {
+void render_line(SDL_Renderer* renderer, Vec2s font_size, Vec2s size, Vec2s pos, Uint32 color, float scale) {
+	const SDL_Rect cursor_rect = {
+		.x = (pos.x * font_size.x * scale),
+		.y = (pos.y * font_size.y * scale),
+		.w = (size.x * font_size.x * scale),
+		.h = (size.y * font_size.y * scale),
+	};
+
+	SDL_SetRenderDrawColor(renderer, color , color >> (1*8), color >> (2*8), color >> (3*8));
+	SDL_RenderFillRect(renderer, &cursor_rect);
+}
+
+void render_rect(SDL_Renderer* renderer, Vec2s font_size, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
 		.x = (int)((float)pos.x * font_size.x * scale),
 		.y = (int)((float)pos.y * font_size.y * scale),
@@ -67,6 +79,30 @@ void render_char(SDL_Renderer* renderer, SDL_Texture* font, Vec2s font_size, cha
 
 	SDL_SetTextureColorMod(font, color , color >> (1*8), color >> (2*8));
 	SDL_RenderCopy(renderer, font, &src, &dst);
+}
+
+void render_info_rows(SDL_Renderer*  renderer, SDL_Texture* font, editor_t* editor, Uint32 color, Uint32 bg) {
+	assert(editor->w != 0 && editor->font_size.x != 0 && editor->scale != 0);
+
+	size_t editor_cols = (editor->w / (editor->font_size.x * editor->scale));
+
+	Vec2s pen = {
+		.x = 0,
+		.y = (editor->b - editor->t) + 1,
+	};
+
+	render_line(renderer, editor->font_size, vec2s(editor_cols, editor->info_row_h), pen, bg, editor->scale);
+
+	pen.y += editor->info_row_h-1;
+
+	const char* mode = editor_get_mode_string(editor);
+	size_t mode_strlen = strlen(mode);
+
+	for (size_t i = 0; i < mode_strlen; i++) {
+		render_char(renderer, font, editor->font_size, mode[i], pen, color, editor->scale);
+		pen.x++;
+	}
+	
 }
 
 void render_num_col(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Uint32 color) {
@@ -115,7 +151,7 @@ void render_text(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Ui
 	Vec2s cursor_in_viewport = vec2s_sub(editor->buf->cursor, vec2s(editor->l, editor->t));
 	cursor_in_viewport = vec2s_add(cursor_in_viewport, editor->vp_origin);
 
-	render_cursor(renderer, editor->font_size, cursor_in_viewport, 0xFFFFFFFF, editor->scale);
+	render_rect(renderer, editor->font_size, cursor_in_viewport, 0xFFFFFFFF, editor->scale);
 	
 	Vec2s pen = {
 		.x = editor->vp_origin.x,
@@ -219,6 +255,7 @@ int main(int argc, char** argv) {
 
 		render_num_col(renderer, texture, &editor, 0xFFFFFFFF);
 		render_text(renderer, texture, &editor, 0xFFFFFFFF);
+		render_info_rows(renderer, texture, &editor, 0xFFFFFFFF, 0xFF222222);
 		SDL_RenderPresent(renderer);
 	}
 
