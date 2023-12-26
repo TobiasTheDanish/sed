@@ -310,13 +310,19 @@ void editor_try_move_viewport(editor_t* editor) {
 	if (editor->buf->cursor.x > editor->r) {
 		size_t diff = editor->buf->cursor.x - editor->r;
 		editor_move_viewport_to(editor, editor->t, editor->b, editor->l+diff, editor->buf->cursor.x);
-	} else if (editor->buf->cursor.x < editor->l) {
+	} 
+
+	if (editor->buf->cursor.x < editor->l) {
 		size_t diff = editor->l - editor->buf->cursor.x;
 		editor_move_viewport_to(editor, editor->t, editor->b, editor->buf->cursor.x, editor->r-diff);
-	} else if (editor->buf->cursor.y < editor->t) {
+	} 
+
+	if (editor->buf->cursor.y < editor->t) {
 		size_t diff = editor->t - editor->buf->cursor.y;
 		editor_move_viewport_to(editor, editor->buf->cursor.y, editor->b-diff, editor->l, editor->r);
-	} else if (editor->buf->cursor.y > editor->b) {
+	} 
+
+	if (editor->buf->cursor.y > editor->b) {
 		size_t diff = editor->buf->cursor.y - editor->b;
 		editor_move_viewport_to(editor, editor->t+diff, editor->buf->cursor.y, editor->l, editor->r);
 	}
@@ -344,12 +350,15 @@ const char* editor_get_mode_string(editor_t* editor) {
 
 void editor_set_mode(editor_t* editor, editor_mode mode) {
 	editor->mode = mode;
+	printf("Mode: %s\n", editor_get_mode_string(editor));
 }
 
 void editor_handle_events(editor_t* editor, SDL_Event* event, bool* quit) {
 	if (event->type == SDL_QUIT) {
 		*quit = true;
 		return;
+	} else if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_RESIZED) {
+		editor_resize(editor, event->window.data1, event->window.data2);
 	}
 
 	switch (editor->mode) {
