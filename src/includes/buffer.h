@@ -35,6 +35,7 @@ typedef struct {
 	size_t info_row_h;
 	editor_mode mode;
 	char* filepath;
+	char* info;
 } editor_t;
 
 line_t* line_init(size_t cap);
@@ -65,5 +66,6 @@ void editor_move_viewport_to(editor_t* editor, size_t t, size_t b, size_t l , si
 const char* editor_get_mode_string(editor_t* editor);
 void editor_set_mode(editor_t* editor, editor_mode mode);
 void editor_handle_events(editor_t* editor, SDL_Event* event, bool* quit);
+void editor_tick(editor_t* editor, double dt);
 
 #endif // !BUFFER_H

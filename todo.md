@@ -30,8 +30,9 @@ Setup of multiple modes
 
 Setup for editor info row:
 
-  - [ ] Add info property to editor struct
-  - [ ] Render row below viewport
+  - [x] Add info property to editor struct
+  - [x] Display current mode
+  - [x] Render row below viewport
 
 
 

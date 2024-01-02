@@ -220,10 +220,15 @@ float clamp_cursor_x(line_t* line, Vec2s cursor) {
 	}
 }
 
+void editor_set_info(editor_t* editor, char* info) {
+	editor->info = info;
+}
+
 void editor_init(size_t line_cap, editor_t* editor, int w, int h) {
 	editor->buf = buffer_init(line_cap);
 	editor->scale = 3.0;
 	editor->mode = NORMAL;
+	editor->info = NULL;
 
 	editor_resize(editor, w, h);
 }
@@ -351,7 +356,6 @@ const char* editor_get_mode_string(editor_t* editor) {
 
 void editor_set_mode(editor_t* editor, editor_mode mode) {
 	editor->mode = mode;
-	printf("Mode: %s\n", editor_get_mode_string(editor));
 }
 
 void editor_handle_events(editor_t* editor, SDL_Event* event, bool* quit) {
@@ -445,7 +449,7 @@ void editor_input_normal_mode(editor_t* editor, SDL_Event* event) {
 							 if (event->key.keysym.mod & KMOD_CTRL) {
 								 if (editor->filepath != NULL) {
 									 editor_write_file(editor, editor->filepath);
-									 printf("File saved!\n");
+									 editor_set_info(editor, "File saved!\n");
 								 }
 							 }
 						 }
@@ -534,5 +538,17 @@ void editor_input_insert_mode(editor_t* editor, SDL_Event* event) {
 			buffer_insert(editor->buf, event->text.text);
 			editor_try_move_viewport(editor);
 			break;
+	}
+}
+
+void editor_tick(editor_t* editor, double dt) {
+	static double info_display_time = 0;
+	info_display_time += dt;
+	printf("\rdelta: %.3f ms, info time: %.3f ms", dt, info_display_time);
+
+	if (editor->info && info_display_time >= 2000) {
+		editor->info = NULL;
+	} else if (!editor->info) {
+		info_display_time = 0;
 	}
 }

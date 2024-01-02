@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stddef.h>
 #include <string.h>
+#include <time.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "includes/stb_image.h"
@@ -33,6 +34,13 @@
 #define FONT_ROWS 7
 #define FONT_CHAR_WIDTH (FONT_WIDTH / FONT_COLS)
 #define FONT_CHAR_HEIGHT (FONT_HEIGHT / FONT_ROWS)
+
+double get_time_s() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
+
+}
 
 void render_line(SDL_Renderer* renderer, Vec2s font_size, Vec2s size, Vec2s pos, Uint32 color, float scale) {
 	const SDL_Rect cursor_rect = {
@@ -93,7 +101,9 @@ void render_info_rows(SDL_Renderer*  renderer, SDL_Texture* font, editor_t* edit
 
 	render_line(renderer, editor->font_size, vec2s(editor_cols, editor->info_row_h), pen, bg, editor->scale);
 
-	pen.y += editor->info_row_h-1;
+	pen.y += editor->info_row_h;
+	render_line(renderer, editor->font_size, vec2s(editor_cols, 1), pen, bg, editor->scale);
+	pen.y--;
 
 	const char* mode = editor_get_mode_string(editor);
 	size_t mode_strlen = strlen(mode);
@@ -103,6 +113,17 @@ void render_info_rows(SDL_Renderer*  renderer, SDL_Texture* font, editor_t* edit
 		pen.x++;
 	}
 	
+	if (editor->info) {
+		pen.x = 0;
+		pen.y--;
+		size_t info_len = strlen(editor->info);
+		for (size_t i = 0; i < info_len; i++) {
+			if (i >= editor_cols) break;
+
+			render_char(renderer, font, editor->font_size, editor->info[i], pen, color, editor->scale);
+			pen.x++;
+		}
+	}
 }
 
 void render_num_col(SDL_Renderer* renderer, SDL_Texture* font, editor_t* editor, Uint32 color) {
@@ -231,6 +252,7 @@ int main(int argc, char** argv) {
 
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 	assert(texture != NULL);
+	double prev_time = get_time_s();
 
 	bool quit = false;
 
@@ -247,6 +269,10 @@ int main(int argc, char** argv) {
 	while (!quit) {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
+		double curr_time = get_time_s();
+		double delta_time = curr_time - prev_time;
+		prev_time = curr_time;
+		editor_tick(&editor, delta_time * 1000);
 
 		SDL_Event event = {0};
 		while(SDL_PollEvent(&event)) {
@@ -259,6 +285,7 @@ int main(int argc, char** argv) {
 		SDL_RenderPresent(renderer);
 	}
 
+	printf("\n");
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
