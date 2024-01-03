@@ -6,6 +6,7 @@
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_video.h>
 #include <assert.h>
+#include <ctype.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -14,6 +15,7 @@
 
 void editor_input_normal_mode(editor_t* editor, SDL_Event* event);
 void editor_input_insert_mode(editor_t* editor, SDL_Event* event);
+void editor_input_command_mode(editor_t* editor, SDL_Event* event);
 
 line_t* line_init(size_t cap) {
 	line_t* line = malloc(sizeof(line_t));
@@ -41,12 +43,13 @@ void line_pop(line_t* line) {
 	line->chars[line->size--] = 0;
 }
 
-buffer_t* buffer_init(size_t line_cap) {
+buffer_t* buffer_init(size_t line_cap, char* filepath) {
 	buffer_t* buf = malloc(sizeof(buffer_t));
 	buf->count = 1;
 	buf->lines = calloc(buf->count, sizeof(line_t*));
 	buf->lines[0] = line_init(line_cap);
 	buf->cursor = vec2s(0, 0);
+	buf->filepath = filepath;
 
 	return buf;
 }
@@ -224,13 +227,39 @@ void editor_set_info(editor_t* editor, char* info) {
 	editor->info = info;
 }
 
-void editor_init(size_t line_cap, editor_t* editor, int w, int h) {
-	editor->buf = buffer_init(line_cap);
+void editor_append_info(editor_t* editor, char* info) {
+	if (editor->info == NULL) {
+		editor->info = calloc(1,sizeof(char));
+	}
+	size_t info_len = strlen(editor->info);
+	size_t text_len = strlen(info);
+
+	editor->info = realloc(editor->info, (info_len+text_len) * sizeof(char));
+	memcpy(editor->info+info_len, info, text_len * sizeof(char));
+}
+
+void editor_init(char* filepath, editor_t* editor, int w, int h) {
+	editor->open_bufs_count = 1;
+	editor->open_bufs = calloc(editor->open_bufs_count, sizeof(buffer_t*));
+	editor->buf = buffer_init(80, filepath);
+	editor->open_bufs[0] = editor->buf;
 	editor->scale = 3.0;
 	editor->mode = NORMAL;
 	editor->info = NULL;
 
 	editor_resize(editor, w, h);
+
+	editor_load_file(editor, filepath);
+}
+
+void editor_open_buffer(editor_t* editor, char* filepath) {
+	buffer_t* new_buf = buffer_init(80, filepath);
+	editor->open_bufs_count += 1;
+	editor->open_bufs = realloc(editor->open_bufs, editor->open_bufs_count * sizeof(buffer_t*));
+	editor->buf = new_buf;
+	editor->open_bufs[editor->open_bufs_count-1] = editor->buf;
+
+	editor_load_file(editor, filepath);
 }
 
 void editor_resize(editor_t* editor, int w, int h) {
@@ -346,9 +375,10 @@ void editor_move_viewport_by(editor_t* editor, size_t t, size_t b, size_t l , si
 }
 
 const char* editor_get_mode_string(editor_t* editor) {
-	static const char* modes[2] = {
+	static const char* modes[MODE_COUNT] = {
 		"NORMAL",
 		"INSERT",
+		"COMMAND",
 	};
 
 	return modes[editor->mode];
@@ -373,6 +403,10 @@ void editor_handle_events(editor_t* editor, SDL_Event* event, bool* quit) {
 
 		case INSERT:
 			editor_input_insert_mode(editor, event);
+			break;
+
+		case COMMAND:
+			editor_input_command_mode(editor, event);
 			break;
 
 		case MODE_COUNT:
@@ -444,6 +478,15 @@ void editor_input_normal_mode(editor_t* editor, SDL_Event* event) {
 						editor_set_mode(editor, INSERT);
 						break;
 
+					case SDLK_COLON:
+						editor_set_mode(editor, COMMAND);
+						break;
+					case SDLK_PERIOD:
+						if (event->key.keysym.mod & KMOD_SHIFT) {
+							editor_set_mode(editor, COMMAND);
+						}
+						break;
+
 					/* ------ MISCELANOUS ------ */
 					case SDLK_w: {
 							 if (event->key.keysym.mod & KMOD_CTRL) {
@@ -451,6 +494,13 @@ void editor_input_normal_mode(editor_t* editor, SDL_Event* event) {
 									 editor_write_file(editor, editor->filepath);
 									 editor_set_info(editor, "File saved!\n");
 								 }
+							 }
+						 }
+						 break;
+
+					case SDLK_b: {
+							 if (event->key.keysym.mod & KMOD_CTRL) {
+								 editor_open_buffer(editor, "todo.md");
 							 }
 						 }
 						 break;
@@ -541,14 +591,59 @@ void editor_input_insert_mode(editor_t* editor, SDL_Event* event) {
 	}
 }
 
+void editor_input_command_mode(editor_t* editor, SDL_Event* event) {
+	switch (event->type) {
+		case SDL_KEYDOWN:
+			switch (event->key.keysym.sym) {
+				case SDLK_BACKSPACE:
+					if (editor->info) {
+						size_t info_len = strlen(editor->info);
+						editor->info[--info_len] = '\0';
+						editor->info = realloc(editor->info, info_len * sizeof(char));
+					}
+					break;
+
+				case SDLK_RETURN:
+					if (editor->info) {
+						// parse command 
+						editor->info = &editor->info[1];
+						size_t cmd_len = 0;
+						while (editor->info[cmd_len] && !isspace(editor->info[cmd_len])) {
+							cmd_len++;
+						}
+						char command[cmd_len];
+						memcpy(command, editor->info, cmd_len * sizeof(char));
+						command[cmd_len] = '\0';
+						editor->info = &editor->info[cmd_len];
+
+						// parse args
+
+						// execute command
+
+						// clean up
+						editor->info = NULL;
+					}
+			}
+			break;
+
+		case SDL_TEXTINPUT:
+			editor_append_info(editor, event->text.text);
+			break;
+	}
+}
+
 void editor_tick(editor_t* editor, double dt) {
 	static double info_display_time = 0;
 	info_display_time += dt;
 	printf("\rdelta: %.3f ms, info time: %.3f ms", dt, info_display_time);
 
-	if (editor->info && info_display_time >= 2000) {
+	if (editor->mode != COMMAND && editor->info && info_display_time >= 2000) {
 		editor->info = NULL;
-	} else if (!editor->info) {
+	} else if (editor->mode == COMMAND || !editor->info) {
 		info_display_time = 0;
+	}
+	
+	if (editor->mode == COMMAND && editor->info == NULL) {
+		editor_set_mode(editor, NORMAL);
 	}
 }

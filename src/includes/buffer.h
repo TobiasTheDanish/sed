@@ -6,10 +6,17 @@
 #include <stddef.h>
 
 typedef enum {
-	NORMAL = 0,
-	INSERT = 1,
-	MODE_COUNT = 2,
+	NORMAL     = 0,
+	INSERT     = 1,
+	COMMAND    = 2,
+	MODE_COUNT = 3,
 } editor_mode;
+
+typedef struct {
+	char* command;
+	char** args;
+	size_t args_count;
+} command_t;
 
 typedef struct {
 	char* chars;
@@ -21,9 +28,12 @@ typedef struct {
 	line_t** lines;
 	size_t count;
 	Vec2s cursor;
+	char* filepath;
 } buffer_t;
 
 typedef struct {
+	buffer_t** open_bufs;
+	size_t open_bufs_count;
 	buffer_t* buf;
 	float scale;
 	int w, h;
@@ -41,7 +51,7 @@ typedef struct {
 line_t* line_init(size_t cap);
 void line_resize(line_t* line);
 
-buffer_t* buffer_init(size_t line_cap);
+buffer_t* buffer_init(size_t line_cap, char* filepath);
 void buffer_insert(buffer_t* buf, char* input);
 void buffer_remove_front(buffer_t* buf);
 void buffer_remove_back(buffer_t* buf);
@@ -53,7 +63,8 @@ void buffer_join_back(buffer_t* buf);
 
 float clamp_cursor_x(line_t* line, Vec2s cursor);
 
-void editor_init(size_t line_cap, editor_t* editor,int w, int h);
+void editor_init(char* filepath, editor_t* editor,int w, int h);
+void editor_open_buffer(editor_t* editor, char* filepath);
 void editor_resize(editor_t* editor, int w, int h);
 void editor_load_file(editor_t* editor, char* filepath);
 void editor_write_file(editor_t* editor, char* filepath);

@@ -34,5 +34,11 @@ Setup for editor info row:
   - [x] Display current mode
   - [x] Render row below viewport
 
-
-
+Setup for opening new files:
+  
+  - [x] Function to load new file
+  - [x] Function to open new buffer with an existing file 
+  - [ ] Function to prompt user for filename
+  - [ ] Function to view open buffers
+  - [ ] Function to swap between open buffers
+  - [ ] Handle input for prompting files

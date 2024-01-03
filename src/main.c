@@ -262,9 +262,7 @@ int main(int argc, char** argv) {
 	editor.num_col_w = NUM_COL_WIDTH;
 	editor.font_size.x = FONT_CHAR_WIDTH;
 	editor.font_size.y = FONT_CHAR_HEIGHT;
-	editor_init(80, &editor, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-
-	editor_load_file(&editor, filepath);
+	editor_init(filepath, &editor, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
 	while (!quit) {
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
